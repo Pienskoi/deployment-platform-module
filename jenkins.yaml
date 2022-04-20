@@ -1,0 +1,22 @@
+controller:
+  image: "docker-registry.project.com/jenkins"
+  tag: "1.0.0"
+  imagePullSecretName: registry-secret
+  installPlugins: false
+
+  JCasC:
+    configScripts:
+      security: |
+        jenkins:
+          securityRealm:
+            local:
+              allowsSignup: false
+              users:
+              - id: "admin"
+                name: "Jenkins Admin"
+                password: "p4ssw0rd"
+          authorizationStrategy:
+            globalMatrix:
+              permissions:
+                - "GROUP:Overall/Read:authenticated"
+                - "USER:Overall/Administer:admin"
