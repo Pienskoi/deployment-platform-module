@@ -1,0 +1,12 @@
+plugin: gcp_compute
+projects:
+  - terraform-task-342219
+filters:
+  - labels.ansible:*
+service_account_file: /sa/service-account.json
+auth_kind: serviceaccount
+keyed_groups:
+  - key: labels.ansible
+leading_separator: no
+compose:
+  ansible_host: networkInterfaces[0].networkIP
