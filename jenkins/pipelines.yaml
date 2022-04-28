@@ -1,0 +1,91 @@
+controller:
+  JCasC:
+    configScripts:
+      jobs: |
+        jobs:
+          - script: >
+              job('Build job') {
+                label('ansible')
+                scm {
+                  github('Pienskoi/devops-project', 'main')  
+                }
+                steps {
+                  ansiblePlaybook('/ansible/build.yml') {
+                    inventoryPath('/ansible/inventory.gcp.yml')
+                    credentialsId('ansible-ssh-key')
+                  }
+                }
+              }
+
+          - script: >
+              job('Deploy job') {
+                label('ansible')
+
+                scm {
+                  github('Pienskoi/devops-project', 'main')  
+                }
+
+                parameters {
+                  choice {
+                    name('ENV_NAME')
+                    description('Pick env name')
+                    choices(['CI', 'QA'])
+                  }
+                  imageTag {
+                    name('DOCKER_IMAGE')
+                    description('Pick version number to deploy')
+                    image('spring-petclinic')
+                    registry('docker-registry.project.com')
+                    credentialId('registry')
+                    defaultTag('latest')
+                    filter('')
+                  }
+                }
+
+                steps {
+                  ansiblePlaybook('/ansible/deploy.yml') {
+                    inventoryPath('/ansible/inventory.gcp.yml')
+                    credentialsId('ansible-ssh-key')
+                  }
+                }
+              }
+
+          - script: >
+              pipelineJob('Build pipeline') {
+                definition {
+                  cpsScm {
+                    lightweight(true)
+                    scm {
+                      github('Pienskoi/devops-project', 'main')  
+                    }
+                    scriptPath('jenkins/build.jenkinsfile')
+                  }
+                }
+
+                triggers {
+                  GenericTrigger {
+                    genericVariables {
+                      genericVariable {
+                        key('ref')
+                        value('$.ref')
+                      }
+                    }
+                    causeString('Triggered on $ref')
+                    regexpFilterText('$ref')
+                    regexpFilterExpression('refs/heads/(main|develop)')
+                  }
+                }
+              }
+
+          - script: >
+              pipelineJob('Deploy pipeline') {
+                definition {
+                  cpsScm {
+                    lightweight(true)
+                    scm {
+                      github('Pienskoi/devops-project', 'main')  
+                    }
+                    scriptPath('jenkins/deploy.jenkinsfile')
+                  }
+                }
+              }
