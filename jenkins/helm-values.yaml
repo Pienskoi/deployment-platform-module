@@ -4,19 +4,34 @@ controller:
   imagePullSecretName: registry-secret
   installPlugins: false
 
+  additionalExistingSecrets:
+  - name: admin-credentials
+    keyName: username
+  - name: admin-credentials
+    keyName: password
+
   JCasC:
-    configScripts:
-      security: |
-        jenkins:
-          securityRealm:
-            local:
-              allowsSignup: false
-              users:
-              - id: "admin"
-                name: "Jenkins Admin"
-                password: "p4ssw0rd"
-          authorizationStrategy:
-            globalMatrix:
-              permissions:
-                - "GROUP:Overall/Read:authenticated"
-                - "USER:Overall/Administer:admin"
+    securityRealm: |-
+      local:
+        allowsSignup: false
+        users:
+        - id: ${admin-credentials-username}
+          name: ${admin-credentials-username}
+          password: ${admin-credentials-password}
+    authorizationStrategy: |-
+      globalMatrix:
+        permissions:
+          - "GROUP:Overall/Read:authenticated"
+          - "USER:Overall/Administer:${admin-credentials-username}"
+
+agent:
+  podTemplates:
+    ansible: |
+      - name: ansible
+        label: ansible
+        containers:
+        - name: ansible
+          image: docker-registry.project.com/ansible:1.0.0
+          ttyEnabled: true
+        imagePullSecrets:
+        - name: registry-secret
