@@ -1,0 +1,9 @@
+image: ""
+imagePullSecrets: 
+  - name: registry-secret
+
+mysql:
+  enabled: false
+# host: 127.0.0.1
+# user: petclinic
+# password: petclinic

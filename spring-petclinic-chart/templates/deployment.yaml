@@ -1,0 +1,47 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-deployment
+  labels:
+    app: spring-petclinic
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: spring-petclinic
+  template:
+    metadata:
+      labels:
+        app: spring-petclinic
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: spring-petclinic
+        image: {{ .Values.image | quote }}
+        imagePullPolicy: Always
+        ports:
+        - name: http-port
+          protocol: TCP
+          containerPort: 8080
+        {{- if not .Values.mysql.enabled }}
+        env:
+        - name: MYSQL_URL
+          value: "jdbc:mysql://{{ .Values.mysql.host }}/petclinic"
+        - name: MYSQL_USER
+          value: {{ .Values.mysql.user }}
+        - name: MYSQL_PASS
+          value: {{ .Values.mysql.password }}
+        args: ["--spring.profiles.active=mysql"]
+        {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
