@@ -36,7 +36,7 @@ pipeline {
   stages {
     stage('Clone repo') {
       steps {
-        git(branch: '${GIT_BRANCH}', url: 'https://github.com/Pienskoi/devops-project.git')
+        git(branch: '${GIT_BRANCH}', url: 'https://github.com/Pienskoi/DevOpsProject.git')
       }
     }
 
