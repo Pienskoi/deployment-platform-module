@@ -1,0 +1,76 @@
+pipeline {
+  agent {
+    kubernetes {
+      defaultContainer 'google-cloud-sdk'
+      yaml '''
+        apiVersion: v1
+        kind: Pod
+        spec:
+          containers:
+          - name: google-cloud-sdk
+            image: google/cloud-sdk:latest
+            tty: true
+      '''
+    }
+  }
+
+  parameters {
+    choice(name: 'ENV_NAME', choices: ['CI', 'QA'], description: 'Pick env name')
+    imageTag(
+      name: 'DOCKER_IMAGE',
+      description: 'Pick version number to deploy',
+      image: 'spring-petclinic',
+      registry('docker-registry.project.com')
+      credentialsId('registry')
+      defaultTag: 'latest')
+  }
+
+  environment {
+    PROJECT_ID = 'project-id'
+    LOCATION = 'location'
+    CREDENTIALS_ID = 'credentials-id'
+    CI_CLUSTER_NAME = 'petclinic-cluster-ci'
+    QA_CLUSTER_NAME = 'petclinic-cluster-qa'
+  }
+
+  stages {
+    stage('Clone repo') {
+      steps {
+        git(branch: '${GIT_BRANCH}', url: 'https://github.com/Pienskoi/devops-project.git')
+      }
+    }
+
+    stage('Login with service account') {
+      steps {
+          withCredentials([file(credentialsId: 'gke-service-account', variable: 'SA_KEY')]) {
+            sh 'gcloud auth activate-service-account --key-file=$SA_KEY'
+          }
+        }
+      }
+    }
+
+    stage('Get CI cluster credentials') {
+      when {
+        expression { ENV_NAME == 'CI' }
+      }
+      steps {
+        sh 'gcloud container clusters get-credentials $CI_CLUSTER_NAME --zone $LOCATION --project $PROJECT_ID'
+      }
+    }
+
+    stage('Get QA cluster credentials') {
+      when {
+        expression { ENV_NAME == 'QA' }
+      }
+      steps {
+        sh 'gcloud container clusters get-credentials $QA_CLUSTER_NAME --zone $LOCATION --project $PROJECT_ID'
+      }
+    }
+
+    stage('Install Helm release') {
+      steps {
+        sh 'helm upgrade --install spring-petclinic ./spring-petclinic-chart'
+      }
+    }
+  }
+}

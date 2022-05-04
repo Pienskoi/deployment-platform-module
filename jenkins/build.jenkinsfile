@@ -1,0 +1,99 @@
+pipeline {
+  agent {
+    kubernetes {
+      defaultContainer 'docker'
+      yaml '''
+        apiVersion: v1
+        kind: Pod
+        spec:
+          containers:
+          - name: dind
+            image: docker:dind
+            tty: true
+            securityContext:
+              privileged: true
+            environment:
+            - DOCKER_TLS_CERTDIR=/certs
+            volumeMounts:
+            - mountPath: /certs/client
+              name: docker-certs-client
+          - name: docker
+            image: docker:latest
+            command:
+            - sh
+            tty: true
+            volumeMounts:
+            - mountPath: /certs/client
+              name: docker-certs-client
+          volumes:
+          - name: docker-certs-client
+      '''
+    }
+  }
+
+  triggers {
+    GenericTrigger(
+     genericVariables: [
+      [key: 'ref', value: '$.ref']
+     ],
+     causeString: 'Triggered on $ref',
+     regexpFilterText: '$ref',
+     regexpFilterExpression: 'refs/heads/(main|develop)'
+    )
+  }
+
+  environment {
+    IMAGE: 'docker-registry.project.com/spring-petclinic'
+  }
+  
+  stages {
+    stage('Clone repo') {
+      steps {
+        git(branch: '${GIT_BRANCH}', url: 'https://github.com/Pienskoi/devops-project.git')
+      }
+    }
+
+    stage('Package and Run tests') {
+      steps {
+        sh './mvnw package'
+      }
+    }
+
+    stage('Login to Docker registry') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'registry', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+          sh 'echo $PASSWORD | docker login ${REGISTRY_URL} -u $USERNAME --password-stdin'
+        }  
+      }
+    }
+
+    stage('Build image') {
+      steps {
+        sh 'docker build -t ${IMAGE}:${BUILD_NUMBER} -f spring-petclinic.dockerfile .'
+      }
+    }
+
+    stage('Tag image') {
+      steps {
+        sh 'docker tag ${IMAGE}:${BUILD_NUMBER} ${IMAGE}:latest'
+      }
+    }
+
+    stage('Push image') {
+      steps {
+        sh 'docker push ${IMAGE}:${BUILD_NUMBER}'
+        sh 'docker push ${IMAGE}:latest'
+      }
+    }
+  }
+
+  post {
+    success {
+      build('Deploy pipeline')
+    }
+
+    always {
+      sh 'docker logout'
+    }
+  }
+}
