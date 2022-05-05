@@ -6,13 +6,38 @@ controller:
           - script: >
               job('Build job') {
                 label('ansible')
+
                 scm {
                   github('Pienskoi/DevOpsProject', 'main')  
                 }
+
+                wrappers {
+                  credentialsBinding {
+                    usernamePassword(REGISTRY_USERNAME, REGISTRY_PASSWORD, registry-credentials)
+                  }
+                }
+
                 steps {
                   ansiblePlaybook('/ansible/build.yml') {
                     inventoryPath('/ansible/inventory.gcp.yml')
                     credentialsId('ansible-ssh-key')
+                    extraVars {
+                      extraVar {
+                        hidden(false)
+                        key('image_tag')
+                        value('$BUILD_NUMBER')
+                      }
+                      extraVar {
+                        hidden(true)
+                        key('registry_username')
+                        value('$REGISTRY_USERNAME')
+                      }
+                      extraVar {
+                        hidden(true)
+                        key('registry_password')
+                        value('$REGISTRY_PASSWORD')
+                      }
+                    }
                   }
                 }
               }
@@ -23,6 +48,16 @@ controller:
 
                 scm {
                   github('Pienskoi/DevOpsProject', 'main')  
+                }
+
+                wrappers {
+                  credentialsBinding {
+                    file(SA_KEY, gke-service-account)
+                    string(LOCATION, cluster-location)
+                    string(PROJECT_ID, project-id)
+                    string(CI_CLUSTER_NAME, ci-cluster-name)
+                    string(QA_CLUSTER_NAME, qa-cluster-name)
+                  }
                 }
 
                 parameters {
@@ -46,6 +81,43 @@ controller:
                   ansiblePlaybook('/ansible/deploy.yml') {
                     inventoryPath('/ansible/inventory.gcp.yml')
                     credentialsId('ansible-ssh-key')
+                    extraVars {
+                      extraVar {
+                        hidden(true)
+                        key('service_account_key_path')
+                        value('$SA_KEY')
+                      }
+                      extraVar {
+                        hidden(true)
+                        key('location')
+                        value('$LOCATION')
+                      }
+                      extraVar {
+                        hidden(true)
+                        key('project_id')
+                        value('$PROJECT_ID')
+                      }
+                      extraVar {
+                        hidden(false)
+                        key('ci_cluster_name')
+                        value('$CI_CLUSTER_NAME')
+                      }
+                      extraVar {
+                        hidden(false)
+                        key('qa_cluster_name')
+                        value('$QA_CLUSTER_NAME')
+                      }
+                      extraVar {
+                        hidden(false)
+                        key('env_name')
+                        value('$ENV_NAME')
+                      }
+                      extraVar {
+                        hidden(false)
+                        key('image')
+                        value('$DOCKER_IMAGE')
+                      }
+                    }
                   }
                 }
               }
