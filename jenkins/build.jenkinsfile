@@ -43,7 +43,8 @@ pipeline {
   }
 
   environment {
-    IMAGE: 'docker-registry.project.com/spring-petclinic'
+    REGISTRY_URL: 'docker-registry.project.com'
+    IMAGE: '${REGISTRY_URL}/spring-petclinic'
   }
   
   stages {
@@ -61,7 +62,7 @@ pipeline {
 
     stage('Login to Docker registry') {
       steps {
-        withCredentials([usernamePassword(credentialsId: 'registry', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+        withCredentials([usernamePassword(credentialsId: 'registry-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
           sh 'echo $PASSWORD | docker login ${REGISTRY_URL} -u $USERNAME --password-stdin'
         }  
       }
@@ -89,7 +90,7 @@ pipeline {
 
   post {
     success {
-      build('Deploy pipeline')
+      build(job: 'Deploy pipeline', parameters: [string(name: 'ENV_NAME', value: 'CI'), imageTag(imageName: '${IMAGE}', imageTag: '${BUILD_NUMBER}', name: 'DOCKER_IMAGE')])
     }
 
     always {
