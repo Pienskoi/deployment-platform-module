@@ -1,0 +1,10 @@
+---
+- name: Set CI Kubernetes cluster name
+  ansible.builtin.set_fact:
+    cluster_name: "{{ ci_cluster_name }}"
+  when: env_name == "ci"
+
+- name: Set QA Kubernetes cluster name
+  ansible.builtin.set_fact:
+    cluster_name: "{{ qa_cluster_name }}"
+  when: env_name == "qa"

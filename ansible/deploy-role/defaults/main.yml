@@ -1,0 +1,11 @@
+---
+helm_chart_path: ./spring-petclinic-chart
+helm_release_name: spring-petclinic
+helm_release_namespace: default
+service_account_key_path: ./service-account.json
+location: location
+project_id: project-id
+ci_cluster_name: ci-cluster
+qa_cluster_name: qa-cluster
+env_name: env
+image: docker-registry.project.com/spring-petclinic:latest
