@@ -1,0 +1,26 @@
+---
+- name: Copy Dockerfile
+  ansible.builtin.copy:
+    src: "{{ dockerfile_path }}"
+    dest: /app/Dockerfile
+
+- name: Login to Docker registry
+  community.docker.docker_login:
+    registry_url: "{{ registry_url }}"
+    username: "{{ registry_username }}"
+    password: "{{ registry_password }}"
+
+- name: Build and push Docker image
+  community.docker.docker_image:
+    build:
+      path: /app/Dockerfile
+    name: "{{ registry_url }}/{{ image_name }}"
+    tag: "{{ image_tag }}"
+    push: yes
+    source: build
+
+- name: Logout from Docker registry
+  community.docker.docker_login:
+    registry_url: "{{ registry_url }}"
+    username: "{{ registry_username }}"
+    state: absent
