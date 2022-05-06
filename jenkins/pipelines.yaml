@@ -13,6 +13,7 @@ controller:
 
                 wrappers {
                   credentialsBinding {
+                    file('ANSIBLE_SA_KEY', 'ansible-service-account')
                     usernamePassword('REGISTRY_USERNAME', 'REGISTRY_PASSWORD', 'registry-credentials')
                   }
                 }
@@ -27,6 +28,16 @@ controller:
                     }
                     credentialsId('ansible-ssh-key')
                     extraVars {
+                      extraVar {
+                        hidden(true)
+                        key('ansible_sa_key_path')
+                        value('$ANSIBLE_SA_KEY')
+                      }
+                      extraVar {
+                        hidden(true)
+                        key('project_id')
+                        value('$PROJECT_ID')
+                      }
                       extraVar {
                         hidden(false)
                         key('image_tag')
@@ -57,7 +68,8 @@ controller:
 
                 wrappers {
                   credentialsBinding {
-                    file('SA_KEY', 'gke-service-account')
+                    file('ANSIBLE_SA_KEY', 'ansible-service-account')
+                    file('GKE_SA_KEY', 'gke-service-account')
                     string('LOCATION', 'cluster-location')
                     string('PROJECT_ID', 'project-id')
                     string('CI_CLUSTER_NAME', 'ci-cluster-name')
@@ -94,8 +106,13 @@ controller:
                     extraVars {
                       extraVar {
                         hidden(true)
-                        key('service_account_key_path')
-                        value('$SA_KEY')
+                        key('ansible_sa_key_path')
+                        value('$ANSIBLE_SA_KEY')
+                      }
+                      extraVar {
+                        hidden(true)
+                        key('gke_sa_key_path')
+                        value('$GKE_SA_KEY')
                       }
                       extraVar {
                         hidden(true)

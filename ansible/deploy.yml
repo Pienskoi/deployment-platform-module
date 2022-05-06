@@ -4,7 +4,7 @@
   roles:
     - role: deploy-role
       vars:
-        service_account_key_path: '{{ service_account_key_path }}'
+        gke_sa_key_path: '{{ gke_sa_key_path }}'
         location: '{{ location }}'
         project_id: '{{ project-id }}'
         ci_cluster_name: '{{ ci-cluster_name }}'

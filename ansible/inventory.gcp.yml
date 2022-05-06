@@ -1,10 +1,13 @@
 plugin: gcp_compute
 projects:
-  - terraform-task-342219
+  - '{{ project -id }}'
 filters:
   - labels.ansible:*
-service_account_file: /sa/service-account.json
+service_account_file: '{{ ansible_sa_key_path }}'
 auth_kind: serviceaccount
+scopes:
+ - 'https://www.googleapis.com/auth/cloud-platform'
+ - 'https://www.googleapis.com/auth/compute.readonly'
 keyed_groups:
   - key: labels.ansible
 leading_separator: no
