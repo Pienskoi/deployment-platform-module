@@ -13,13 +13,18 @@ controller:
 
                 wrappers {
                   credentialsBinding {
-                    usernamePassword(REGISTRY_USERNAME, REGISTRY_PASSWORD, registry-credentials)
+                    usernamePassword('REGISTRY_USERNAME', 'REGISTRY_PASSWORD', 'registry-credentials')
                   }
                 }
 
                 steps {
-                  ansiblePlaybook('/ansible/build.yml') {
-                    inventoryPath('/ansible/inventory.gcp.yml')
+                  ansiblePlaybookBuilder {
+                    playbook('/ansible/build.yml')
+                    inventory {
+                      inventoryPath{
+                        path('/ansible/inventory.gcp.yml')
+                      }
+                    }
                     credentialsId('ansible-ssh-key')
                     extraVars {
                       extraVar {
@@ -52,11 +57,11 @@ controller:
 
                 wrappers {
                   credentialsBinding {
-                    file(SA_KEY, gke-service-account)
-                    string(LOCATION, cluster-location)
-                    string(PROJECT_ID, project-id)
-                    string(CI_CLUSTER_NAME, ci-cluster-name)
-                    string(QA_CLUSTER_NAME, qa-cluster-name)
+                    file('SA_KEY', 'gke-service-account')
+                    string('LOCATION', 'cluster-location')
+                    string('PROJECT_ID', 'project-id')
+                    string('CI_CLUSTER_NAME', 'ci-cluster-name')
+                    string('QA_CLUSTER_NAME', 'qa-cluster-name')
                   }
                 }
 
@@ -78,8 +83,13 @@ controller:
                 }
 
                 steps {
-                  ansiblePlaybook('/ansible/deploy.yml') {
-                    inventoryPath('/ansible/inventory.gcp.yml')
+                  ansiblePlaybookBuilder {
+                    playbook('/ansible/deploy.yml')
+                    inventory {
+                      inventoryPath {
+                        path('/ansible/inventory.gcp.yml') 
+                      }
+                    }
                     credentialsId('ansible-ssh-key')
                     extraVars {
                       extraVar {
