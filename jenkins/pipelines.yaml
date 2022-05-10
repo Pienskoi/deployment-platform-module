@@ -189,7 +189,18 @@ controller:
                     }
                     causeString('Triggered on $ref')
                     regexpFilterText('$ref')
-                    regexpFilterExpression('refs/heads/(main|develop)')
+                    regexpFilterExpression('^refs/heads/(main|develop)$')
+                  }
+                  GenericTrigger {
+                    genericVariables {
+                      genericVariable {
+                        key('action')
+                        value('$.action')
+                      }
+                    }
+                    causeString('Triggered on Pull Request')
+                    regexpFilterText('$action')
+                    regexpFilterExpression('^(opened|reopened|synchronize)$')
                   }
                 }
               }
