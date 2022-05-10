@@ -2,9 +2,16 @@
 - name: Set CI Kubernetes cluster name
   ansible.builtin.set_fact:
     cluster_name: "{{ ci_cluster_name }}"
+    mysql:
+      enabled: True
+      host: "{{ mysql_host }}"
+      user: "{{ mysql_user }}"
+      password: "{{ mysql_password }}"
   when: env_name == "ci"
 
 - name: Set QA Kubernetes cluster name
   ansible.builtin.set_fact:
     cluster_name: "{{ qa_cluster_name }}"
+    mysql:
+      enabled: False
   when: env_name == "qa"

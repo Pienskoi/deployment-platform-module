@@ -74,6 +74,9 @@ controller:
                     string('PROJECT_ID', 'project-id')
                     string('CI_CLUSTER_NAME', 'ci-cluster-name')
                     string('QA_CLUSTER_NAME', 'qa-cluster-name')
+                    string('MYSQL_HOST', 'mysql-host')
+                    string('MYSQL_USER', 'mysql-user')
+                    string('MYSQL_PASSWORD', 'mysql-password')
                   }
                 }
 
@@ -143,6 +146,21 @@ controller:
                         hidden(false)
                         key('image')
                         value('$DOCKER_IMAGE')
+                      }
+                      extraVar {
+                        hidden(true)
+                        key('mysql_host')
+                        value('$MYSQL_HOST')
+                      }
+                      extraVar {
+                        hidden(true)
+                        key('mysql_user')
+                        value('$MYSQL_USER')
+                      }
+                      extraVar {
+                        hidden(true)
+                        key('mysql_password')
+                        value('$MYSQL_PASSWORD')
                       }
                     }
                   }

@@ -11,4 +11,5 @@
     chart_ref: /helm-chart
     kubeconfig: /.kube/config
     values:
-      image: '{{ image }}'
+      image: "{{ image }}"
+      mysql: "{{ mysql }}"

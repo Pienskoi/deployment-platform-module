@@ -56,6 +56,26 @@ pipeline {
       }
     }
 
+    stage('Install Helm Release on CI env') {
+      when {
+        expression { ENV_NAME == 'CI' }
+      }
+      steps {
+        withCredentials([
+          string(credentialsId: 'mysql-host', variable: 'MYSQL_HOST'),
+          string(credentialsId: 'mysql-user', variable: 'MYSQL_USER'),
+          string(credentialsId: 'mysql-password', variable: 'MYSQL_PASSWORD')
+          ]) {
+          sh '''helm upgrade --install spring-petclinic ./spring-petclinic-chart \\
+          --set image=$DOCKER_IMAGE \\
+          --set mysql.enabled=true \\
+          --set mysql.host=$MYSQL_HOST \\
+          --set mysql.user=$MYSQL_USER \\
+          --set mysql.password=$MYSQL_PASSWORD'''
+        }
+      }
+    }
+
     stage('Get QA cluster credentials') {
       when {
         expression { ENV_NAME == 'QA' }
@@ -71,9 +91,12 @@ pipeline {
       }
     }
 
-    stage('Install Helm release') {
+    stage('Install Helm release on QA env') {
+      when {
+        expression { ENV_NAME == 'QA' }
+      }
       steps {
-        sh 'helm upgrade --install spring-petclinic ./spring-petclinic-chart --set image=${DOCKER_IMAGE}'
+        sh 'helm upgrade --install spring-petclinic ./spring-petclinic-chart --set image=$DOCKER_IMAGE'
       }
     }
   }
