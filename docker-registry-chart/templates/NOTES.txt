@@ -1,0 +1,2 @@
+Private Docker Registry is accessible on URL:
+https://{{ .Values.domain }}/
