@@ -4,6 +4,8 @@ imagePullSecrets:
 
 mysql:
   enabled: false
-# host: 127.0.0.1
+# database: petclinic
 # user: petclinic
 # password: petclinic
+# connectionName: cloudsql-connection-name
+# serviceAccountName: kubernetes-service-account

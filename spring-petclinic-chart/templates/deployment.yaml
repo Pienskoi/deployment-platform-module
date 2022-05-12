@@ -19,6 +19,9 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if not .Values.mysql.enabled }}
+      serviceAccountName: {{ .Values.mysql.serviceAccountName }}
+      {{- end }}
       containers:
       - name: spring-petclinic
         image: {{ .Values.image | quote }}
@@ -30,7 +33,7 @@ spec:
         {{- if not .Values.mysql.enabled }}
         env:
         - name: MYSQL_URL
-          value: "jdbc:mysql://{{ .Values.mysql.host }}/petclinic"
+          value: "jdbc:mysql://127.0.0.1:3306/{{ .Values.mysql.database }}"
         - name: MYSQL_USER
           value: {{ .Values.mysql.user }}
         - name: MYSQL_PASS
@@ -45,3 +48,19 @@ spec:
           httpGet:
             path: /
             port: http
+      {{- if not .Values.mysql.enabled }}
+      - name: cloud-sql-proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:1.30.1
+        command:
+          - "/cloud_sql_proxy"
+          - "-ip_address_types=PRIVATE"
+          - "-log_debug_stdout"
+          - "-instances={{ .Values.mysql.connectionName }}=tcp:3306"
+        securityContext:
+          runAsNonRoot: true
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1"
+      {{- end }}
+

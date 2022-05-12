@@ -4,9 +4,11 @@
     cluster_name: "{{ ci_cluster_name }}"
     mysql:
       enabled: True
-      host: "{{ mysql_host }}"
-      user: "{{ mysql_user }}"
+      database: "{{ mysql_database }}"
+      username: "{{ mysql_username }}"
       password: "{{ mysql_password }}"
+      connecttion_anme: "{{ mysql_connection_name }}"
+      service_account_anme: "{{ mysql_service_account_name }}"
   when: env_name == "ci"
 
 - name: Set QA Kubernetes cluster name

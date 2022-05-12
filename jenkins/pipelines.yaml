@@ -74,9 +74,11 @@ controller:
                     string('PROJECT_ID', 'project-id')
                     string('CI_CLUSTER_NAME', 'ci-cluster-name')
                     string('QA_CLUSTER_NAME', 'qa-cluster-name')
-                    string('MYSQL_HOST', 'mysql-host')
-                    string('MYSQL_USER', 'mysql-user')
+                    string('MYSQL_DATABASE', 'mysql-database')
+                    string('MYSQL_USERNAME', 'mysql-username')
                     string('MYSQL_PASSWORD', 'mysql-password')
+                    string('MYSQL_CONNECTION', 'mysql-connection-name')
+                    string('MYSQL_SA', 'mysql-sa-name')
                   }
                 }
 
@@ -149,18 +151,28 @@ controller:
                       }
                       extraVar {
                         hidden(true)
-                        key('mysql_host')
-                        value('$MYSQL_HOST')
+                        key('mysql_database')
+                        value('$MYSQL_DATABASE')
                       }
                       extraVar {
                         hidden(true)
-                        key('mysql_user')
-                        value('$MYSQL_USER')
+                        key('mysql_username')
+                        value('$MYSQL_USERNAME')
                       }
                       extraVar {
                         hidden(true)
                         key('mysql_password')
                         value('$MYSQL_PASSWORD')
+                      }
+                      extraVar {
+                        hidden(true)
+                        key('mysql_connection_name')
+                        value('$MYSQL_CONNECTION')
+                      }
+                      extraVar {
+                        hidden(true)
+                        key('mysql_service_account_name')
+                        value('$MYSQL_SA')
                       }
                     }
                   }
