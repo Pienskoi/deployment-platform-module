@@ -1,3 +1,21 @@
+module "project-services" {
+  source  = "terraform-google-modules/project-factory/google//modules/project_services"
+  version = "~> 13.0"
+
+  project_id = var.project_id
+
+  activate_apis = [
+    "compute.googleapis.com",
+    "container.googleapis.com",
+    "storage-api.googleapis.com",
+    "sqladmin.googleapis.com",
+    "servicenetworking.googleapis.com",
+    "cloudresourcemanager.googleapis.com",
+    "iam.googleapis.com",
+    "dns.googleapis.com"
+  ]
+}
+
 module "vpc" {
   source  = "terraform-google-modules/network/google//modules/vpc"
   version = "~> 5.0"
