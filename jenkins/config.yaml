@@ -4,6 +4,23 @@ controller:
   imagePullSecretName: registry-secret
   installPlugins: false
 
+  ingress:
+    enabled: true
+    apiVersion: "networking.k8s.io/v1"
+    hostName: "jenkins.project.com"
+    annotations:
+      kubernetes.io/ingress.regional-static-ip-name: jenkins-static-ip
+      kubernetes.io/ingress.class: "gce-internal"
+      ingress.gcp.kubernetes.io/pre-shared-cert: "project-cert"
+  secondaryingress:
+    enabled: true
+    apiVersion: "networking.k8s.io/v1"
+    annotations:
+      kubernetes.io/ingress.global-static-ip-name: "jenkins-webhook-static-ip"
+      kubernetes.io/ingress.class: "gce"
+    paths:
+    - /github-webhook
+
   additionalExistingSecrets:
   - name: admin-credentials
     keyName: username
