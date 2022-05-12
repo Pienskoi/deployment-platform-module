@@ -1,0 +1,22 @@
+---
+- name: Upload private docker registry certificates
+  hosts: all
+  become: yes
+
+  vars:
+    cert_path: tls.crt
+
+  tasks:
+  - name: Copy certificate
+    ansible.builtin.copy:
+      src: "{{ cert_path }}"
+      dest: /usr/local/share/ca-certificates/ca.crt
+
+  - name: Update CA store
+    ansible.builtin.command:
+      cmd: update-ca-certificates
+
+  - name: Restart docker
+    ansible.builtin.service:
+      name: docker
+      state: restarted
