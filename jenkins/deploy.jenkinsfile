@@ -75,7 +75,10 @@ pipeline {
           --set mysql.username=$MYSQL_USERNAME \\
           --set mysql.password=$MYSQL_PASSWORD \\
           --set mysql.connectionName=$MYSQL_CONNECTION \\
-          --set mysql.serviceAccountName=$MYSQL_SA'''
+          --set mysql.serviceAccountName=$MYSQL_SA \\
+          --set loadBalancer.type="external" \\
+          --set loadBalancer.addressName="spring-petclinic-static-ip" \\
+          --set loadBalancer.domains={"spring-petclinic.tk"}'''
         }
       }
     }

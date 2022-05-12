@@ -7,13 +7,16 @@
       database: "{{ mysql_database }}"
       username: "{{ mysql_username }}"
       password: "{{ mysql_password }}"
-      connecttion_anme: "{{ mysql_connection_name }}"
-      service_account_anme: "{{ mysql_service_account_name }}"
+      connectionName: "{{ mysql_connection_name }}"
+      serviceAccountName: "{{ mysql_service_account_name }}"
+    loadBalancer:
+      type: "external"
+      addressName: "spring-petclinic-static-ip"
+      domains:
+      - "spring-petclinic.tk"      
   when: env_name == "ci"
 
 - name: Set QA Kubernetes cluster name
   ansible.builtin.set_fact:
     cluster_name: "{{ qa_cluster_name }}"
-    mysql:
-      enabled: False
   when: env_name == "qa"

@@ -6,8 +6,13 @@
       vars:
         gke_sa_key_path: '{{ gke_sa_key_path }}'
         location: '{{ location }}'
-        project_id: '{{ project-id }}'
-        ci_cluster_name: '{{ ci-cluster_name }}'
-        qa_cluster_name: '{{ qa-cluster_name }}'
+        project_id: '{{ project_id }}'
+        ci_cluster_name: '{{ ci_cluster_name }}'
+        qa_cluster_name: '{{ qa_cluster_name }}'
         env_name: '{{ env_name }}'
         image: '{{ image }}'
+        database: "{{ mysql_database }}"
+        username: "{{ mysql_username }}"
+        password: "{{ mysql_password }}"
+        connectionName: "{{ mysql_connection_name }}"
+        serviceAccountName: "{{ mysql_service_account_name }}"
