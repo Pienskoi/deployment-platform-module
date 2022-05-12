@@ -1,0 +1,12 @@
+{{- if .Values.loadBalancer.type "external" }}
+---
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: managed-cert
+spec:
+  {{- with .Values.loadBalancer.domains }}
+  domains:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}

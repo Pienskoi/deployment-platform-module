@@ -1,11 +1,21 @@
-image: ""
+image: docker-registry.project.com/spring-petclinic:latest
 imagePullSecrets: 
   - name: registry-secret
 
 mysql:
   enabled: false
+# Next values should be provided if mysql is enabled:
 # database: petclinic
 # user: petclinic
 # password: petclinic
 # connectionName: cloudsql-connection-name
 # serviceAccountName: kubernetes-service-account
+
+loadBalancer:
+  type: internal
+  addressName: internal-spring-petclinic-ip
+# Self-managed SSL certificate should be provided for internal Load Balancer 
+  preSharedCert: project-cert
+# Public domains should be provided for external Load Balancer 
+# domains:
+# - spring-petclinic.tk 
