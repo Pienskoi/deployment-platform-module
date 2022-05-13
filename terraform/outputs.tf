@@ -14,7 +14,7 @@ output "gke_deploy_sa_key" {
 }
 
 output "sql_connection_name" {
-  value     = module.safer_mysql_db.isntance_connection_name
+  value     = module.safer_mysql_db.instance_connection_name
   sensitive = true
 }
 

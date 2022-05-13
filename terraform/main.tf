@@ -1,21 +1,3 @@
-module "project-services" {
-  source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "~> 13.0"
-
-  project_id = var.project_id
-
-  activate_apis = [
-    "compute.googleapis.com",
-    "container.googleapis.com",
-    "storage-api.googleapis.com",
-    "sqladmin.googleapis.com",
-    "servicenetworking.googleapis.com",
-    "cloudresourcemanager.googleapis.com",
-    "iam.googleapis.com",
-    "dns.googleapis.com"
-  ]
-}
-
 module "vpc" {
   source  = "terraform-google-modules/network/google//modules/vpc"
   version = "~> 5.0"
@@ -45,6 +27,35 @@ module "subnets" {
       role          = "ACTIVE"
     }
   ]
+
+  secondary_ranges = {
+    project-subnet = [
+      {
+        range_name    = "ip-range-pods-infr"
+        ip_cidr_range = "10.1.0.0/16"
+      },
+      {
+        range_name    = "ip-range-svc-infr"
+        ip_cidr_range = "10.4.0.0/20"
+      },
+      {
+        range_name    = "ip-range-pods-ci"
+        ip_cidr_range = "10.2.0.0/16"
+      },
+      {
+        range_name    = "ip-range-svc-ci"
+        ip_cidr_range = "10.4.16.0/20"
+      },
+      {
+        range_name    = "ip-range-pods-qa"
+        ip_cidr_range = "10.3.0.0/16"
+      },
+      {
+        range_name    = "ip-range-svc-qa"
+        ip_cidr_range = "10.4.32.0/20"
+      },
+    ]
+  }
 }
 
 module "cloud_router" {
@@ -68,14 +79,10 @@ module "gke_infrastructure" {
   project_id        = var.project_id
   name              = var.gke_infrastructure_cluster_name
   region            = var.region
-  network           = module.vpc.network_self_link
-  subnetwork        = "project-subnet"
+  network           = module.vpc.network_name
+  subnetwork        = module.subnets.subnets["${var.region}/project-subnet"].name
   ip_range_pods     = "ip-range-pods-infr"
   ip_range_services = "ip-range-svc-infr"
-
-  cluster_autoscaling = {
-    enabled = true
-  }
 
   node_pools = [{
     name         = "default-node-pool"
@@ -85,6 +92,14 @@ module "gke_infrastructure" {
     min_count    = 1
     max_count    = 3
   }]
+
+  master_ipv4_cidr_block = "10.0.0.0/28"
+  master_authorized_networks = [
+    {
+      cidr_block   = "10.10.10.0/24"
+      display_name = "VPC"
+    }
+  ]
 }
 
 module "gke_qa" {
@@ -94,14 +109,10 @@ module "gke_qa" {
   project_id        = var.project_id
   name              = var.gke_qa_cluster_name
   region            = var.region
-  network           = module.vpc.network_self_link
-  subnetwork        = "project-subnet"
+  network           = module.vpc.network_name
+  subnetwork        = module.subnets.subnets["${var.region}/project-subnet"].name
   ip_range_pods     = "ip-range-pods-qa"
-  ip_range_services = "ip-range-svc-cqa"
-
-  cluster_autoscaling = {
-    enabled = true
-  }
+  ip_range_services = "ip-range-svc-qa"
 
   node_pools = [{
     name         = "default-node-pool"
@@ -111,6 +122,18 @@ module "gke_qa" {
     min_count    = 1
     max_count    = 10
   }]
+
+  master_ipv4_cidr_block = "10.0.0.16/28"
+  master_authorized_networks = [
+    {
+      cidr_block   = "10.10.10.0/24"
+      display_name = "VPC"
+    },
+    {
+      cidr_block   = "10.1.0.0/20"
+      display_name = "Infrastructure cluster pods"
+    }
+  ]
 }
 
 module "gke_ci" {
@@ -120,14 +143,10 @@ module "gke_ci" {
   project_id        = var.project_id
   name              = var.gke_ci_cluster_name
   region            = var.region
-  network           = module.vpc.network_self_link
-  subnetwork        = "project-subnet"
+  network           = module.vpc.network_name
+  subnetwork        = module.subnets.subnets["${var.region}/project-subnet"].name
   ip_range_pods     = "ip-range-pods-ci"
   ip_range_services = "ip-range-svc-ci"
-
-  cluster_autoscaling = {
-    enabled = true
-  }
 
   node_pools = [{
     name         = "default-node-pool"
@@ -137,16 +156,30 @@ module "gke_ci" {
     min_count    = 1
     max_count    = 10
   }]
+
+  master_ipv4_cidr_block = "10.0.0.32/28"
+  master_authorized_networks = [
+    {
+      cidr_block   = "10.10.10.0/24"
+      display_name = "VPC"
+    },
+    {
+      cidr_block   = "10.1.0.0/20"
+      display_name = "Infrastructure cluster pods"
+    }
+  ]
 }
 
 module "workload_identity" {
   source  = "terraform-google-modules/kubernetes-engine/google//modules/workload-identity"
   version = "~> 20.0"
-  
+
   project_id = var.project_id
-  name       = "mysql_workload_identity"
+  name       = "mysql-workload-identity"
   namespace  = "petclinic"
   roles      = ["roles/cloudsql.client"]
+
+  depends_on = [module.gke_ci.name]
 }
 
 module "service_accounts" {
@@ -158,73 +191,75 @@ module "service_accounts" {
 
   names = [
     "ansible-control-node",
-    "ansible-managed-node",
     "docker-registry-storage",
     "gke-deploy"
   ]
 
   descriptions = [
     "Service account used by Ansible control node",
-    "Service account used by Ansible managed nodes",
     "Service account used by Docker registry to access GCS",
     "Service account used to deploy application to GKE clusters"
   ]
 }
 
-module "service_account_iam_bindings" {
-  source  = "terraform-google-modules/iam/google//modules/service_accounts_iam"
-  version = "~> 7.4"
-
-  service_accounts = [module.service_accounts.emails["ansible-managed-node"]]
-  project          = var.project_id
-
-  bindings = {
-    "roles/iam.serviceAccountUser" = [
-      module.service_accounts.iam_emails["ansible-control-node"]
-    ]
-  }
+resource "google_service_account" "ansible_managed_node_sa" {
+  account_id  = "ansible-managed-node"
+  description = "Service account used by Ansible managed nodes"
 }
 
-module "project_iam_bindings" {
-  source  = "terraform-google-modules/iam/google//modules/projects_iam"
-  version = "~> 7.4"
-
-  projects = [var.project_id]
-
-  bindings = {
-    "roles/compute.viewer"       = [module.service_accounts.iam_emails["ansible-control-node"]]
-    "roles/compute.osAdminLogin" = [module.service_accounts.iam_emails["ansible-control-node"]]
-    "" = [module.service_accounts.iam_emails["gke-deploy"]] 
-  }
+resource "google_service_account_iam_member" "ansible_managed_node_sa_iam" {
+  service_account_id = google_service_account.ansible_managed_node_sa.id
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${module.service_accounts.service_accounts_map["ansible-control-node"].email}"
 }
 
-resource "random_id" "bucket_name_suffix" {
-  byte_length = 4
+resource "google_project_iam_member" "ansible_control_node_sa_iam" {
+  for_each = toset(["roles/compute.viewer", "roles/compute.osAdminLogin"])
+
+  project = var.project_id
+  role    = each.key
+  member  = "serviceAccount:${module.service_accounts.service_accounts_map["ansible-control-node"].email}"
+}
+
+resource "google_project_iam_member" "gke_deploy_sa_iam" {
+  project = var.project_id
+  role    = "roles/container.developer"
+  member  = "serviceAccount:${module.service_accounts.service_accounts_map["gke-deploy"].email}"
+}
+
+resource "random_string" "bucket_name_suffix" {
+  length  = 4
+  special = false
+  upper   = false
 }
 
 module "bucket" {
   source  = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
   version = "~> 3.2"
 
-  name       = "docker-registry-bucket-${random_id.bucket_name_suffix}"
+  name       = "docker-registry-bucket-${random_string.bucket_name_suffix.result}"
   project_id = var.project_id
   location   = var.region
-  iam_members = [{
-    role   = "roles/storage.objectAdmin"
-    member = module.service_accounts.iam_emails["docker-registry-storage"]
-  }]
+
+  force_destroy = true
+}
+
+resource "google_storage_bucket_iam_member" "member" {
+  bucket = module.bucket.bucket.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${module.service_accounts.service_accounts_map["docker-registry-storage"].email}"
 }
 
 module "private_service_access" {
-  source  = "terraform-google-modules/sql-db/google//modules/private_service_access"
-  version = "~> 10.0"  
-  
+  source  = "GoogleCloudPlatform/sql-db/google//modules/private_service_access"
+  version = "~> 10.0"
+
   project_id  = var.project_id
-  vpc_network = module.vpc.network_name
+  vpc_network = module.vpc.network_self_link
 }
 
 module "safer_mysql_db" {
-  source  = "terraform-google-modules/sql-db/google//modules/safer_mysql"
+  source  = "GoogleCloudPlatform/sql-db/google//modules/safer_mysql"
   version = "~> 10.0"
 
   name                 = "project-mysql"
@@ -242,8 +277,12 @@ module "safer_mysql_db" {
   assign_public_ip   = false
 
   additional_databases = [{
-    name = var.sql_database_name
+    name      = var.sql_database_name
+    charset   = ""
+    collation = ""
   }]
+
+  deletion_protection = false
 
   module_depends_on = [module.private_service_access.peering_completed]
 }
@@ -252,14 +291,15 @@ module "build_instance_template" {
   source  = "terraform-google-modules/vm/google//modules/instance_template"
   version = "~> 7.7"
 
-  project_id   = var.project_id
-  region       = var.region
-  subnetwork   = "project-subnet"
-  source_image = "debian-cloud/debian-10"
-  machine_type = "n1-standard-1"
+  project_id           = var.project_id
+  region               = var.region
+  subnetwork           = module.subnets.subnets["${var.region}/project-subnet"].name
+  source_image_family  = "debian-10"
+  source_image_project = "debian-cloud"
+  machine_type         = "n1-standard-1"
 
   service_account = {
-    email  = module.service_accounts.emails["ansible-managed-node"]
+    email  = google_service_account.ansible_managed_node_sa.email
     scopes = ["cloud-platform"]
   }
 
@@ -278,7 +318,7 @@ module "build_compute_instance" {
 
   region            = var.region
   zone              = var.zone
-  subnetwork        = "project-subnet"
+  subnetwork        = module.subnets.subnets["${var.region}/project-subnet"].name
   hostname          = "ansible-build-node"
   instance_template = module.build_instance_template.self_link
 }
@@ -287,14 +327,15 @@ module "deploy_instance_template" {
   source  = "terraform-google-modules/vm/google//modules/instance_template"
   version = "~> 7.7"
 
-  project_id   = var.project_id
-  region       = var.region
-  subnetwork   = "project-subnet"
-  source_image = "debian-cloud/debian-10"
-  machine_type = "n1-standard-1"
+  project_id           = var.project_id
+  region               = var.region
+  subnetwork           = module.subnets.subnets["${var.region}/project-subnet"].name
+  source_image_family  = "debian-10"
+  source_image_project = "debian-cloud"
+  machine_type         = "n1-standard-1"
 
   service_account = {
-    email  = module.service_accounts.emails["ansible-managed-node"]
+    email  = google_service_account.ansible_managed_node_sa.email
     scopes = ["cloud-platform"]
   }
 
@@ -313,7 +354,7 @@ module "deploy_compute_instance" {
 
   region            = var.region
   zone              = var.zone
-  subnetwork        = "project-subnet"
+  subnetwork        = module.subnets.subnets["${var.region}/project-subnet"].name
   hostname          = "ansible-deploy-node"
   instance_template = module.deploy_instance_template.self_link
 }
@@ -348,9 +389,9 @@ module "private_address" {
 
   project_id       = var.project_id
   region           = var.region
-  subnetwork       = "project-subnet"
+  subnetwork       = module.subnets.subnets["${var.region}/project-subnet"].name
   enable_cloud_dns = true
-  dns_domain       = module.dns_private_zone.domain
+  dns_domain       = "project.com"
   dns_managed_zone = module.dns_private_zone.name
   dns_project      = var.project_id
 
@@ -373,10 +414,9 @@ module "public_address" {
 
   project_id       = var.project_id
   region           = var.region
-  subnetwork       = "project-subnet"
   enable_cloud_dns = true
-  dns_domain       = module.dns_private_zone.domain
-  dns_managed_zone = module.dns_private_zone.name
+  dns_domain       = "spring-petclinic.tk"
+  dns_managed_zone = module.dns_public_zone.name
   dns_project      = var.project_id
   address_type     = "EXTERNAL"
 
@@ -385,25 +425,23 @@ module "public_address" {
     "jenkins-webhook-static-ip"
   ]
 
-  dns_short_names = [
-    ""
-  ]
+  dns_short_names = []
 }
 
 module "vpn_ha" {
-  source = "terraform-google-modules/vpn/google//modules/vpn_ha"
+  source  = "terraform-google-modules/vpn/google//modules/vpn_ha"
   version = "~> 2.2"
 
-  project_id  = var.project_id
-  region  = var.region
-  network         = module.vpc.network_self_link
-  name            = "project-vpc-to-onprem"
+  project_id = var.project_id
+  region     = var.region
+  network    = module.vpc.network_self_link
+  name       = "project-vpc-to-onprem"
 
   peer_external_gateway = {
     redundancy_type = "SINGLE_IP_INTERNALLY_REDUNDANT"
     interfaces = [{
-        id = 0
-        ip_address = var.onprem_router_ip_address
+      id         = 0
+      ip_address = var.onprem_router_ip_address
     }]
   }
   router_asn = 64514
@@ -413,24 +451,24 @@ module "vpn_ha" {
         address = "169.254.1.1"
         asn     = 64513
       }
-      bgp_peer_options  = null
-      bgp_session_range = "169.254.1.2/30"
-      ike_version       = 2
-      vpn_gateway_interface = 0
+      bgp_peer_options                = null
+      bgp_session_range               = "169.254.1.2/30"
+      ike_version                     = 2
+      vpn_gateway_interface           = 0
       peer_external_gateway_interface = 0
-      shared_secret     = var.vpn_shared_secret
+      shared_secret                   = var.vpn_shared_secret
     }
     remote-1 = {
       bgp_peer = {
         address = "169.254.2.1"
         asn     = 64513
       }
-      bgp_peer_options  = null
-      bgp_session_range = "169.254.2.2/30"
-      ike_version       = 2
-      vpn_gateway_interface = 1
+      bgp_peer_options                = null
+      bgp_session_range               = "169.254.2.2/30"
+      ike_version                     = 2
+      vpn_gateway_interface           = 1
       peer_external_gateway_interface = 0
-      shared_secret     = var.vpn_shared_secret
+      shared_secret                   = var.vpn_shared_secret
     }
   }
 }
