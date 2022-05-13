@@ -18,7 +18,7 @@ output "sql_connection_name" {
   sensitive = true
 }
 
-output "sql_service_account_name" {
-  value     = module.workload_identity.k8s_service_account_name
+output "sql_service_account" {
+  value     = module.workload_identity.gcp_service_account_email
   sensitive = true
 }

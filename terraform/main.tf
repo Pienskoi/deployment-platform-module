@@ -53,7 +53,7 @@ module "subnets" {
       {
         range_name    = "ip-range-svc-qa"
         ip_cidr_range = "10.4.32.0/20"
-      },
+      }
     ]
   }
 }
@@ -79,6 +79,7 @@ module "gke_infrastructure" {
   project_id        = var.project_id
   name              = var.gke_infrastructure_cluster_name
   region            = var.region
+  zones             = [var.zone]
   network           = module.vpc.network_name
   subnetwork        = module.subnets.subnets["${var.region}/project-subnet"].name
   ip_range_pods     = "ip-range-pods-infr"
@@ -86,7 +87,7 @@ module "gke_infrastructure" {
 
   node_pools = [{
     name         = "default-node-pool"
-    machine_type = "e2-medium"
+    machine_type = "n1-standard-1"
     image_type   = "COS_CONTAINERD"
     autoscaling  = true
     min_count    = 1
@@ -109,6 +110,7 @@ module "gke_qa" {
   project_id        = var.project_id
   name              = var.gke_qa_cluster_name
   region            = var.region
+  zones             = [var.zone]  
   network           = module.vpc.network_name
   subnetwork        = module.subnets.subnets["${var.region}/project-subnet"].name
   ip_range_pods     = "ip-range-pods-qa"
@@ -116,7 +118,7 @@ module "gke_qa" {
 
   node_pools = [{
     name         = "default-node-pool"
-    machine_type = "e2-medium"
+    machine_type = "n1-standard-1"
     image_type   = "COS_CONTAINERD"
     autoscaling  = true
     min_count    = 1
@@ -150,7 +152,7 @@ module "gke_ci" {
 
   node_pools = [{
     name         = "default-node-pool"
-    machine_type = "e2-medium"
+    machine_type = "n1-standard-1"
     image_type   = "COS_CONTAINERD"
     autoscaling  = true
     min_count    = 1
@@ -174,10 +176,12 @@ module "workload_identity" {
   source  = "terraform-google-modules/kubernetes-engine/google//modules/workload-identity"
   version = "~> 20.0"
 
-  project_id = var.project_id
-  name       = "mysql-workload-identity"
-  namespace  = "petclinic"
-  roles      = ["roles/cloudsql.client"]
+  project_id          = var.project_id
+  name                = "mysql-workload-identity"
+  namespace           = "petclinic"
+  use_existing_k8s_sa = true
+  annotate_k8s_sa     = false
+  roles               = ["roles/cloudsql.client"]
 
   depends_on = [module.gke_ci.name]
 }
@@ -255,7 +259,9 @@ module "private_service_access" {
   version = "~> 10.0"
 
   project_id  = var.project_id
-  vpc_network = module.vpc.network_self_link
+  vpc_network = module.vpc.network_name
+
+  depends_on = [module.vpc]
 }
 
 module "safer_mysql_db" {
@@ -428,47 +434,3 @@ module "public_address" {
   dns_short_names = []
 }
 
-module "vpn_ha" {
-  source  = "terraform-google-modules/vpn/google//modules/vpn_ha"
-  version = "~> 2.2"
-
-  project_id = var.project_id
-  region     = var.region
-  network    = module.vpc.network_self_link
-  name       = "project-vpc-to-onprem"
-
-  peer_external_gateway = {
-    redundancy_type = "SINGLE_IP_INTERNALLY_REDUNDANT"
-    interfaces = [{
-      id         = 0
-      ip_address = var.onprem_router_ip_address
-    }]
-  }
-  router_asn = 64514
-  tunnels = {
-    remote-0 = {
-      bgp_peer = {
-        address = "169.254.1.1"
-        asn     = 64513
-      }
-      bgp_peer_options                = null
-      bgp_session_range               = "169.254.1.2/30"
-      ike_version                     = 2
-      vpn_gateway_interface           = 0
-      peer_external_gateway_interface = 0
-      shared_secret                   = var.vpn_shared_secret
-    }
-    remote-1 = {
-      bgp_peer = {
-        address = "169.254.2.1"
-        asn     = 64513
-      }
-      bgp_peer_options                = null
-      bgp_session_range               = "169.254.2.2/30"
-      ike_version                     = 2
-      vpn_gateway_interface           = 1
-      peer_external_gateway_interface = 0
-      shared_secret                   = var.vpn_shared_secret
-    }
-  }
-}
