@@ -15,4 +15,4 @@
         username: "{{ mysql_username }}"
         password: "{{ mysql_password }}"
         connectionName: "{{ mysql_connection_name }}"
-        serviceAccountName: "{{ mysql_service_account_name }}"
+        serviceAccount: "{{ mysql_service_account }}"

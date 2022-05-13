@@ -13,4 +13,4 @@ mysql_database: petclinic
 mysql_username: petclinic
 mysql_password: petclinic
 mysql_connection_name: cloudsql-connection-name
-mysql_service_account_name: kubernetes-service-account
+mysql_service_account: gcp-service-account

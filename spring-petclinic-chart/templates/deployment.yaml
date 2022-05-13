@@ -20,7 +20,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- if not .Values.mysql.enabled }}
-      serviceAccountName: {{ .Values.mysql.serviceAccountName }}
+      serviceAccountName: sql-proxy-sa
       {{- end }}
       containers:
       - name: spring-petclinic
