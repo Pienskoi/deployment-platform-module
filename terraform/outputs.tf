@@ -1,4 +1,4 @@
-output "ansilbe_control_node_sa_key" {
+output "ansible_control_node_sa_key" {
   value     = module.service_accounts.keys["ansible-control-node"]
   sensitive = true
 }
@@ -8,9 +8,22 @@ output "docker_registry_storage_sa_key" {
   sensitive = true
 }
 
+output "docker_registry_storage_bucket" {
+  value = module.bucket.bucket.name
+}
+
 output "gke_deploy_sa_key" {
   value     = module.service_accounts.keys["gke-deploy"]
   sensitive = true
+}
+
+output "os_login_sa_key" {
+  value     = module.service_accounts.keys["os-login"]
+  sensitive = true
+}
+
+output "os_login_ssh_username" {
+  value = "sa_${module.service_accounts.service_accounts_map["os-login"].unique_id}"
 }
 
 output "sql_connection_name" {
@@ -21,4 +34,12 @@ output "sql_connection_name" {
 output "sql_service_account" {
   value     = module.workload_identity.gcp_service_account_email
   sensitive = true
+}
+
+output "dns_name_servers" {
+  value = module.dns_public_zone.name_servers
+}
+
+output "wireguard_server_public_ip" {
+  value = module.public_address.addresses[2]
 }

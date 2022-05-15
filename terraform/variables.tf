@@ -35,13 +35,3 @@ variable "sql_user_password" {
   type      = string
   sensitive = true
 }
-
-variable "onprem_router_ip_address" {
-  type      = string
-  sensitive = true
-}
-
-variable "vpn_shared_secret" {
-  type      = string
-  sensitive = true
-}
