@@ -1,6 +1,7 @@
-htpasswdFilePath: ./htpasswd
-serviceAccountKeyPath: ./service-account.json
+htpasswdFilePath: htpasswd
+serviceAccountKeyPath: service-account.json
 storageBucketName: docker-registry-bucket
 staticAddressName: docker-registry-static-ip
 domain: docker-registry.project.com
-preSharedCert: project-cert
+certFilePath: project.com.crt
+certKeyPath: project.com.key

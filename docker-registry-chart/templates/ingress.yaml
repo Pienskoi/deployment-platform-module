@@ -4,11 +4,12 @@ kind: Ingress
 metadata:
   name: docker-registry-ilb
   annotations:
-    kubernetes.io/ingress.regional-static-ip-name: {{ .Values.staticAddressName }}
+    kubernetes.io/ingress.regional-static-ip-name: {{ .Values.staticAddressName | quote }}
     kubernetes.io/ingress.class: "gce-internal"
     kubernetes.io/ingress.allow-http: "false"
-    ingress.gcp.kubernetes.io/pre-shared-cert: {{ .Values.preSharedCert }}
 spec:
+  tls:
+  - secretName: certs-secret
   rules:
   - host: {{ .Values.domain }}
     http:
