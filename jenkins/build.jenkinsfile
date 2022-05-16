@@ -34,25 +34,18 @@ pipeline {
   triggers {
     GenericTrigger(
      genericVariables: [
-      [key: 'ref', value: '$.ref']
+      [key: 'ref', value: '$.ref', defaultValue: ''],
+      [key: 'action', value: '$.action', defaultValue: '']
      ],
-     causeString: 'Triggered on push to $ref',
-     regexpFilterText: '$ref',
-     regexpFilterExpression: '^refs/heads/(main|develop)$'
-    )
-    GenericTrigger(
-     genericVariables: [
-      [key: 'action', value: '$.action']
-     ],
-     causeString: 'Triggered on Pull Request',
-     regexpFilterText: '$action',
-     regexpFilterExpression: '^(opened|reopened|synchronize)$'
+     causeString: 'Triggered on $ref$action',
+     regexpFilterText: '$ref$action',
+     regexpFilterExpression: '^(refs/heads/(main|develop)|opened|reopened|synchronize)$'
     )
   }
 
   environment {
-    REGISTRY_URL: 'docker-registry.project.com'
-    IMAGE: '${REGISTRY_URL}/spring-petclinic'
+    REGISTRY_URL='docker-registry.project.com'
+    IMAGE='${REGISTRY_URL}/spring-petclinic'
   }
   
   stages {
@@ -98,6 +91,9 @@ pipeline {
 
   post {
     success {
+      when {
+        expression { ref != '' }
+      }
       build(job: 'Deploy pipeline', parameters: [string(name: 'ENV_NAME', value: 'CI'), imageTag(imageName: '${IMAGE}', imageTag: '${BUILD_NUMBER}', name: 'DOCKER_IMAGE')])
     }
 
