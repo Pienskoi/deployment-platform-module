@@ -103,7 +103,7 @@ pipeline {
         expression { ENV_NAME == 'QA' }
       }
       steps {
-        sh 'helm upgrade --install spring-petclinic ./spring-petclinic-chart --set image=$DOCKER_IMAGE'
+        sh 'helm upgrade --install spring-petclinic ./spring-petclinic-chart --set image=$DOCKER_IMAGE --namespace petclinic'
       }
     }
   }
