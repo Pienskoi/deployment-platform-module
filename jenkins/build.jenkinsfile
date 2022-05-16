@@ -91,10 +91,17 @@ pipeline {
 
   post {
     success {
-      when {
-        expression { ref != '' }
+      script {
+        if (env.BRANCH_NAME == 'master') {
+          build(
+            job: 'Deploy pipeline', 
+            parameters: [
+              string(name: 'ENV_NAME', value: 'CI'),
+              imageTag(imageName: '${IMAGE}', imageTag: '${BUILD_NUMBER}', name: 'DOCKER_IMAGE')
+            ]
+          )
+        }
       }
-      build(job: 'Deploy pipeline', parameters: [string(name: 'ENV_NAME', value: 'CI'), imageTag(imageName: '${IMAGE}', imageTag: '${BUILD_NUMBER}', name: 'DOCKER_IMAGE')])
     }
 
     always {
