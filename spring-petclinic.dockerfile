@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk-alpine as build
+FROM openjdk:11-jdk-slim as build
 WORKDIR /workspace/app
 
 COPY mvnw .
@@ -9,8 +9,8 @@ COPY src src
 RUN ./mvnw install -DskipTests
 RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
 
-FROM openjdk:8-jre-alpine
-RUN addgroup -S spring && adduser -S spring -G spring
+FROM openjdk:11-jre-slim
+RUN useradd -r spring
 USER spring:spring
 
 ARG DEPENDENCY=/workspace/app/target/dependency
