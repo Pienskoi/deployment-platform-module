@@ -197,22 +197,17 @@ controller:
                       genericVariable {
                         key('ref')
                         value('$.ref')
+                        defaultValue('')
                       }
-                    }
-                    causeString('Triggered on $ref')
-                    regexpFilterText('$ref')
-                    regexpFilterExpression('^refs/heads/(main|develop)$')
-                  }
-                  GenericTrigger {
-                    genericVariables {
                       genericVariable {
                         key('action')
                         value('$.action')
+                        defaultValue('')
                       }
                     }
-                    causeString('Triggered on Pull Request')
-                    regexpFilterText('$action')
-                    regexpFilterExpression('^(opened|reopened|synchronize)$')
+                    causeString('Triggered on $ref$action')
+                    regexpFilterText('$ref$action')
+                    regexpFilterExpression('^(refs/heads/(main|develop)|opened|reopened|synchronize)$')
                   }
                 }
               }
