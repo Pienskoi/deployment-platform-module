@@ -1,9 +1,9 @@
 plugin: gcp_compute
 projects:
-  - '{{ project -id }}'
+  - "{{ project-id }}"
 filters:
   - labels.ansible:*
-service_account_file: '{{ ansible_sa_key_path }}'
+service_account_file: "{{ ansible_sa_key_path }}"
 auth_kind: serviceaccount
 scopes:
  - 'https://www.googleapis.com/auth/cloud-platform'
