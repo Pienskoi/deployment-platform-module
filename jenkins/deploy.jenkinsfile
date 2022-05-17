@@ -20,23 +20,17 @@ pipeline {
       name: 'DOCKER_IMAGE',
       description: 'Pick version number to deploy',
       image: 'spring-petclinic',
-      registry('docker-registry.project.com')
-      credentialsId('registry')
-      defaultTag: 'latest')
+      registry: 'docker-registry.project.com',
+      credentialId: 'registry-credentials',
+      defaultTag: 'latest'
+    )
   }
 
   stages {
-    stage('Clone repo') {
-      steps {
-        git(branch: '${GIT_BRANCH}', url: 'https://github.com/Pienskoi/DevOpsProject.git')
-      }
-    }
-
     stage('Login with service account') {
       steps {
-          withCredentials([file(credentialsId: 'gke-service-account', variable: 'SA_KEY')]) {
-            sh 'gcloud auth activate-service-account --key-file=$SA_KEY'
-          }
+        withCredentials([file(credentialsId: 'gke-service-account', variable: 'SA_KEY')]) {
+          sh 'gcloud auth activate-service-account --key-file=$SA_KEY'
         }
       }
     }
