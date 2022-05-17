@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo 'deb http://ftp.debian.org/debian buster-backports main' >> /etc/apt/sources.list.d/buster-backports.list
+echo 'deb https://ftp.debian.org/debian buster-backports main' >> /etc/apt/sources.list.d/buster-backports.list
 apt update && apt install wireguard linux-headers-$(uname -r) -y
 
 umask 077
