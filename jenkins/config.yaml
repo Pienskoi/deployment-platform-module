@@ -1,17 +1,19 @@
 controller:
   image: "docker-registry.project.com/jenkins"
   tag: "1.0.0"
-  imagePullSecretName: registry-secret
+  imagePullSecretName: "registry-secret"
   installPlugins: false
-
+  
+  jenkinsUrlProtocol: "https" 	
   ingress:
     enabled: true
     apiVersion: "networking.k8s.io/v1"
     hostName: "jenkins.project.com"
     annotations:
-      kubernetes.io/ingress.regional-static-ip-name: jenkins-static-ip
+      kubernetes.io/ingress.regional-static-ip-name: "jenkins-static-ip"
       kubernetes.io/ingress.class: "gce-internal"
       ingress.gcp.kubernetes.io/pre-shared-cert: "project-cert"
+      kubernetes.io/ingress.allow-http: "false"
   secondaryingress:
     enabled: true
     apiVersion: "networking.k8s.io/v1"
@@ -19,13 +21,7 @@ controller:
       kubernetes.io/ingress.global-static-ip-name: "jenkins-webhook-static-ip"
       kubernetes.io/ingress.class: "gce"
     paths:
-    - /github-webhook
-
-  additionalExistingSecrets:
-  - name: admin-credentials
-    keyName: username
-  - name: admin-credentials
-    keyName: password
+    - /generic-webhook-trigger/invoke
 
   JCasC:
     securityRealm: |-
