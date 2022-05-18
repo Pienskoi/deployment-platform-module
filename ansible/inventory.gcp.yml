@@ -1,15 +1,16 @@
 plugin: gcp_compute
 projects:
-  - "{{ project-id }}"
+  - PROJECT_ID
 filters:
   - labels.ansible:*
-service_account_file: "{{ ansible_sa_key_path }}"
+service_account_file: ANSIBLE_SA_KEY_PATH
 auth_kind: serviceaccount
 scopes:
- - 'https://www.googleapis.com/auth/cloud-platform'
- - 'https://www.googleapis.com/auth/compute.readonly'
+  - 'https://www.googleapis.com/auth/compute.readonly'
 keyed_groups:
   - key: labels.ansible
 leading_separator: no
+hostnames:
+  - name
 compose:
   ansible_host: networkInterfaces[0].networkIP
