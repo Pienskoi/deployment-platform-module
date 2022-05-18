@@ -37,14 +37,11 @@ controller:
           - "GROUP:Overall/Read:authenticated"
           - "USER:Overall/Administer:${admin-credentials-username}"
 
-agent:
-  podTemplates:
-    ansible: |
-      - name: ansible
-        label: ansible
-        containers:
-        - name: ansible
-          image: docker-registry.project.com/ansible:1.0.0
-          ttyEnabled: true
-        imagePullSecrets:
-        - name: registry-secret
+additionalAgents:
+  ansible:
+    podName: ansible
+    customJenkinsLabels: ansible
+    sideContainerName: jnlp
+    image: docker-registry.project.com/ansible
+    tag: 1.0.0
+    imagePullSecretName: registry-secret
