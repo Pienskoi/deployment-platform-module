@@ -3,7 +3,3 @@
   become: yes
   roles:
     - role: build-role
-      vars:
-        image_tag: "{{ image_tag }}"
-        registry_username: "{{ registry_username }}"
-        registry_password: "{{ registry_password }}"

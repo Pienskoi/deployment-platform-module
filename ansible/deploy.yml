@@ -3,16 +3,3 @@
   become: yes
   roles:
     - role: deploy-role
-      vars:
-        gke_sa_key_path: '{{ gke_sa_key_path }}'
-        location: '{{ location }}'
-        project_id: '{{ project_id }}'
-        ci_cluster_name: '{{ ci_cluster_name }}'
-        qa_cluster_name: '{{ qa_cluster_name }}'
-        env_name: '{{ env_name }}'
-        image: '{{ image }}'
-        database: "{{ mysql_database }}"
-        username: "{{ mysql_username }}"
-        password: "{{ mysql_password }}"
-        connectionName: "{{ mysql_connection_name }}"
-        serviceAccount: "{{ mysql_service_account }}"
