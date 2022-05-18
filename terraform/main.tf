@@ -80,6 +80,21 @@ resource "google_compute_firewall" "project_subnet_allow_internal" {
   }
 }
 
+resource "google_compute_firewall" "pods_infr_allow_ssh" {
+  name          = "pods-infr-allow-ssh"
+  project       = var.project_id
+  network       = module.vpc.network_name
+  direction     = "INGRESS"
+  source_ranges = [module.subnets.subnets["${var.region}/project-subnet"].secondary_ip_range[0].ip_cidr_range]
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+
+  target_tags = ["ansible"]
+}
+
 module "cloud_router" {
   source  = "terraform-google-modules/cloud-router/google"
   version = "~> 1.3"
@@ -342,6 +357,7 @@ module "build_instance_template" {
   source_image_family  = "debian-10"
   source_image_project = "debian-cloud"
   machine_type         = "n1-standard-1"
+  tags                 = ["ansible"]
 
   service_account = {
     email  = google_service_account.ansible_managed_node_sa.email
@@ -378,6 +394,7 @@ module "deploy_instance_template" {
   source_image_family  = "debian-10"
   source_image_project = "debian-cloud"
   machine_type         = "n1-standard-1"
+  tags                 = ["ansible"]
 
   service_account = {
     email  = google_service_account.ansible_managed_node_sa.email
