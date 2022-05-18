@@ -1,8 +1,20 @@
 ---
+- name: Create build directory
+  ansible.builtin.file: 
+    path: /build 
+    state: directory
+
 - name: Copy Dockerfile
   ansible.builtin.copy:
-    src: "{{ dockerfile_path }}"
-    dest: /app/Dockerfile
+    src: "{{ work_dir }}/{{ item }}"
+    dest: "/build/{{ item }}"
+    mode: "755"
+  loop:
+    - "{{ dockerfile }}"
+    - mvnw
+    - .mvn/
+    - pom.xml
+    - src/
 
 - name: Login to Docker registry
   community.docker.docker_login:
@@ -13,7 +25,8 @@
 - name: Build and push Docker image
   community.docker.docker_image:
     build:
-      path: /app/Dockerfile
+      path: /build/
+      dockerfile: "{{ dockerfile }}"
     name: "{{ registry_url }}/{{ image_name }}"
     tag: "{{ image_tag }}"
     push: yes

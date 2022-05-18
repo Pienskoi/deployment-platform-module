@@ -17,7 +17,7 @@
 
 - name: Add Docker Repository
   ansible.builtin.apt_repository:
-    repo: deb https://download.docker.com/linux/debian focal stable
+    repo: deb https://download.docker.com/linux/debian buster stable
     state: present
 
 - name: Install docker-ce
