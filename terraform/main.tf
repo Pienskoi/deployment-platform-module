@@ -124,7 +124,7 @@ module "gke_infrastructure" {
 
   node_pools = [{
     name         = "default-node-pool"
-    machine_type = "n1-standard-1"
+    machine_type = "n2-standard-2"
     image_type   = "COS_CONTAINERD"
     autoscaling  = true
     min_count    = 1
@@ -134,8 +134,8 @@ module "gke_infrastructure" {
   master_ipv4_cidr_block = "10.0.0.0/28"
   master_authorized_networks = [
     {
-      cidr_block   = "10.10.10.0/24"
-      display_name = "VPC"
+      cidr_block   = module.subnets.subnets["${var.region}/project-subnet"].ip_cidr_range
+      display_name = "VPC project-subnet"
     }
   ]
 }
@@ -165,11 +165,11 @@ module "gke_qa" {
   master_ipv4_cidr_block = "10.0.0.16/28"
   master_authorized_networks = [
     {
-      cidr_block   = "10.10.10.0/24"
-      display_name = "VPC"
+      cidr_block   = module.subnets.subnets["${var.region}/project-subnet"].ip_cidr_range
+      display_name = "VPC project-subnet"
     },
     {
-      cidr_block   = "10.1.0.0/20"
+      cidr_block   = module.subnets.subnets["${var.region}/project-subnet"].secondary_ip_range[0].ip_cidr_range
       display_name = "Infrastructure cluster pods"
     }
   ]
@@ -182,6 +182,7 @@ module "gke_ci" {
   project_id        = var.project_id
   name              = var.gke_ci_cluster_name
   region            = var.region
+  zones             = [var.zone]
   network           = module.vpc.network_name
   subnetwork        = module.subnets.subnets["${var.region}/project-subnet"].name
   ip_range_pods     = "ip-range-pods-ci"
@@ -199,11 +200,11 @@ module "gke_ci" {
   master_ipv4_cidr_block = "10.0.0.32/28"
   master_authorized_networks = [
     {
-      cidr_block   = "10.10.10.0/24"
-      display_name = "VPC"
+      cidr_block   = module.subnets.subnets["${var.region}/project-subnet"].ip_cidr_range
+      display_name = "VPC project-subnet"
     },
     {
-      cidr_block   = "10.1.0.0/20"
+      cidr_block   = module.subnets.subnets["${var.region}/project-subnet"].secondary_ip_range[0].ip_cidr_range
       display_name = "Infrastructure cluster pods"
     }
   ]
