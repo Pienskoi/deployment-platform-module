@@ -40,6 +40,10 @@ output "dns_name_servers" {
   value = module.dns_public_zone.name_servers
 }
 
+output "jenkins_webhook_static_ip" {
+  value = module.global_public_address.addresses[1]
+}
+
 output "wireguard_server_public_ip" {
-  value = module.public_address.addresses[2]
+  value = module.regional_public_address.addresses[0]
 }

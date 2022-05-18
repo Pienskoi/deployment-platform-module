@@ -459,18 +459,28 @@ module "private_address" {
   ]
 }
 
-module "public_address" {
+module "regional_public_address" {
   source  = "terraform-google-modules/address/google"
   version = "~> 3.1"
 
   project_id   = var.project_id
   region       = var.region
   address_type = "EXTERNAL"
+  names        = ["wireguard-static-ip"]
+}
+
+module "global_public_address" {
+  source  = "terraform-google-modules/address/google"
+  version = "~> 3.1"
+
+  project_id   = var.project_id
+  region       = var.region
+  address_type = "EXTERNAL"
+  global       = true
 
   names = [
     "spring-petclinic-static-ip",
-    "jenkins-webhook-static-ip",
-    "wireguard-static-ip"
+    "jenkins-webhook-static-ip"
   ]
 }
 
@@ -489,7 +499,7 @@ module "dns_public_zone" {
     name    = ""
     type    = "A"
     ttl     = 300
-    records = [module.public_address.addresses[0]]
+    records = [module.global_public_address.addresses[0]]
   }]
 }
 
@@ -540,7 +550,7 @@ module "wireguard_compute_instance" {
   instance_template = module.wireguard_instance_template.self_link
 
   access_config = [{
-    nat_ip       = module.public_address.addresses[2]
+    nat_ip       = module.regional_public_address.addresses[0]
     network_tier = "PREMIUM"
   }]
 }
