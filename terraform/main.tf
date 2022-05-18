@@ -525,7 +525,7 @@ module "wireguard_instance_template" {
   can_ip_forward       = true
   tags                 = ["wireguard"]
 
-  startup_script = templatefile("./wireguard_script.sh", {
+  startup_script = templatefile("./wireguard-script.sh", {
     interface_address = module.private_address.addresses[2]
   })
 
@@ -555,7 +555,7 @@ module "wireguard_compute_instance" {
   }]
 }
 
-resource "google_compute_firewall" "wireguard_firewall" {
+resource "google_compute_firewall" "wireguard_allow" {
   name          = "wireguard-allow"
   project       = var.project_id
   network       = module.vpc.network_name
