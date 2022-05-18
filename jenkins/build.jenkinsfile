@@ -7,26 +7,31 @@ pipeline {
         kind: Pod
         spec:
           containers:
-          - name: dind
-            image: docker:dind
-            tty: true
-            securityContext:
-              privileged: true
-            environment:
-            - DOCKER_TLS_CERTDIR=/certs
-            volumeMounts:
-            - mountPath: /certs/client
-              name: docker-certs-client
           - name: docker
-            image: docker:latest
+            image: docker:20
             command:
-            - sh
+            - sleep
+            args:
+            - 99d
             tty: true
             volumeMounts:
-            - mountPath: /certs/client
-              name: docker-certs-client
+            - name: dockersock
+              mountPath: /var/run/docker.sock
+            - name: registry-certs
+              mountPath: /etc/ssl/certs
+          - name: jdk
+            image: openjdk:11
+            command:
+            - sleep
+            args:
+            - 99d
           volumes:
-          - name: docker-certs-client
+          - name: dockersock
+            hostPath:
+              path: /var/run/docker.sock
+          - name: registry-certs
+            secret:
+              secretName: certs-secret
       '''
     }
   }
@@ -51,7 +56,9 @@ pipeline {
   stages {
     stage('Package and Run tests') {
       steps {
-        sh './mvnw package'
+        container('jdk') {
+          sh './mvnw package'
+        }     
       }
     }
 
