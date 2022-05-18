@@ -16,7 +16,16 @@
     ansible.builtin.command:
       cmd: update-ca-certificates
 
+  - name: Check if Docker is installed
+    ansible.builtin.package:
+      name: docker-ce
+      state: present
+    check_mode: yes
+    ignore_errors: yes
+    register: docker_check
+   
   - name: Restart docker
     ansible.builtin.service:
       name: docker
       state: restarted
+    when: docker_check is succeeded
