@@ -218,6 +218,7 @@ module "workload_identity" {
   name                = "mysql-workload-identity"
   namespace           = "petclinic"
   use_existing_k8s_sa = true
+  k8s_sa_name         = "sql-proxy-sa"
   annotate_k8s_sa     = false
   roles               = ["roles/cloudsql.client"]
 
