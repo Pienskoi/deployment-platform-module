@@ -13,30 +13,30 @@ controller:
 
                 wrappers {
                   credentialsBinding {
+                    string('PROJECT_ID', 'project-id')
                     file('ANSIBLE_SA_KEY', 'ansible-service-account')
                     usernamePassword('REGISTRY_USERNAME', 'REGISTRY_PASSWORD', 'registry-credentials')
                   }
                 }
 
                 steps {
+                  shell {
+                    command('sed -i -e "s;PROJECT_ID;$PROJECT_ID;" -e "s;ANSIBLE_SA_KEY_PATH;$ANSIBLE_SA_KEY;" ./ansible/inventory.gcp.yml')
+                  }
                   ansiblePlaybookBuilder {
-                    playbook('/ansible/build.yml')
+                    playbook('./ansible/build.yml')
                     inventory {
-                      inventoryPath{
-                        path('/ansible/inventory.gcp.yml')
+                      inventoryPath {
+                        path('./ansible/inventory.gcp.yml')
                       }
                     }
                     credentialsId('ansible-ssh-key')
+                    disableHostKeyChecking(true)
                     extraVars {
                       extraVar {
-                        hidden(true)
-                        key('ansible_sa_key_path')
-                        value('$ANSIBLE_SA_KEY')
-                      }
-                      extraVar {
-                        hidden(true)
-                        key('project_id')
-                        value('$PROJECT_ID')
+                        hidden(false)
+                        key('work_dir')
+                        value('$WORKSPACE/')
                       }
                       extraVar {
                         hidden(false)
@@ -100,20 +100,19 @@ controller:
                 }
 
                 steps {
+                  shell {
+                    command('sed -i -e "s;PROJECT_ID;$PROJECT_ID;" -e "s;ANSIBLE_SA_KEY_PATH;$ANSIBLE_SA_KEY;" ./ansible/inventory.gcp.yml')
+                  }
                   ansiblePlaybookBuilder {
-                    playbook('/ansible/deploy.yml')
+                    playbook('./ansible/deploy.yml')
                     inventory {
                       inventoryPath {
-                        path('/ansible/inventory.gcp.yml') 
+                        path('./ansible/inventory.gcp.yml') 
                       }
                     }
                     credentialsId('ansible-ssh-key')
+                    disableHostKeyChecking(true)
                     extraVars {
-                      extraVar {
-                        hidden(true)
-                        key('ansible_sa_key_path')
-                        value('$ANSIBLE_SA_KEY')
-                      }
                       extraVar {
                         hidden(true)
                         key('gke_sa_key_path')
