@@ -19,4 +19,10 @@
 - name: Set QA Kubernetes cluster name
   ansible.builtin.set_fact:
     cluster_name: "{{ qa_cluster_name }}"
+    mysql:
+      enable: False
+    load_balancer:
+      type: "internal"
+      addressName: "internal-spring-petclinic-ip"
+      preSharedCert: "project-cert"
   when: env_name == "QA"
