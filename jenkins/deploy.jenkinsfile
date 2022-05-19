@@ -48,7 +48,40 @@ pipeline {
     stage('Login with service account') {
       steps {
         withCredentials([file(credentialsId: 'gke-service-account', variable: 'SA_KEY')]) {
-          sh 'gcloud auth activate-service-account --key-file=$SA_KEY'
+          container('gcloud') {
+            sh 'gcloud auth activate-service-account --key-file=$SA_KEY'
+          }
+        }
+      }
+    }
+
+    stage('Create Helm Values file for CI env') {
+      when {
+        expression { ENV_NAME == 'CI' }
+      }
+      steps {
+        withCredentials([
+          string(credentialsId: 'mysql-database', variable: 'MYSQL_DATABASE'),
+          string(credentialsId: 'mysql-username', variable: 'MYSQL_USERNAME'),
+          string(credentialsId: 'mysql-password', variable: 'MYSQL_PASSWORD'),
+          string(credentialsId: 'mysql-connection-name', variable: 'MYSQL_CONNECTION'),
+          string(credentialsId: 'mysql-service-account', variable: 'MYSQL_SA')
+          ]) {
+            sh '''cat <<EOF > ci-values.yaml
+            image: $DOCKER_IMAGE
+            mysql:
+              enabled: true
+              database: $MYSQL_DATABASE
+              username: $MYSQL_USERNAME
+              password: $MYSQL_PASSWORD
+              connectionName: $MYSQL_CONNECTION
+              serviceAccount: $MYSQL_SA
+            loadBalancer:
+              type: external
+              addressName: spring-petclinic-static-ip
+              domains:
+              - spring-petclinic.tk
+            EOF'''.stripIndent()
         }
       }
     }
@@ -63,7 +96,9 @@ pipeline {
           string(credentialsId: 'cluster-location', variable: 'LOCATION'),
           string(credentialsId: 'project-id', variable: 'PROJECT_ID')
           ]) {
-          sh 'gcloud container clusters get-credentials $CI_CLUSTER_NAME --zone $LOCATION --project $PROJECT_ID'
+          container('gcloud') {
+            sh 'gcloud container clusters get-credentials $CI_CLUSTER_NAME --zone $LOCATION --project $PROJECT_ID'
+          }        
         }
       }
     }
@@ -73,7 +108,9 @@ pipeline {
         expression { ENV_NAME == 'CI' }
       }
       steps {
-            sh 'helm upgrade --install spring-petclinic ./spring-petclinic-chart --namespace petclinic --create-namespace'
+          container('helm') {
+            sh 'helm upgrade --install spring-petclinic ./spring-petclinic-chart -f ci-values.yaml  --namespace petclinic --create-namespace'
+          }
       }
     }
 
@@ -87,7 +124,9 @@ pipeline {
           string(credentialsId: 'cluster-location', variable: 'LOCATION'),
           string(credentialsId: 'project-id', variable: 'PROJECT_ID')
           ]) {
-          sh 'gcloud container clusters get-credentials $QA_CLUSTER_NAME --zone $LOCATION --project $PROJECT_ID'
+          container('gcloud') {
+            sh 'gcloud container clusters get-credentials $QA_CLUSTER_NAME --region $LOCATION --project $PROJECT_ID'
+          }
         }
       }
     }
@@ -97,7 +136,9 @@ pipeline {
         expression { ENV_NAME == 'QA' }
       }
       steps {
+        container('helm') {
           sh 'helm upgrade --install spring-petclinic ./spring-petclinic-chart --set image=$DOCKER_IMAGE --namespace petclinic --create-namespace'
+        }
       }
     }
   }
