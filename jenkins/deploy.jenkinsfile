@@ -100,7 +100,7 @@ pipeline {
               addressName: spring-petclinic-static-ip
               domains:
               - spring-petclinic.tk
-            EOF'''.stripIndent()
+            '''.stripIndent()
         }
       }
     }
