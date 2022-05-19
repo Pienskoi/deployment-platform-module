@@ -9,14 +9,14 @@
       password: "{{ mysql_password }}"
       connectionName: "{{ mysql_connection_name }}"
       serviceAccount: "{{ mysql_service_account }}"
-    loadBalancer:
+    load_balancer:
       type: "external"
       addressName: "spring-petclinic-static-ip"
       domains:
       - "spring-petclinic.tk"      
-  when: env_name == "ci"
+  when: env_name == "CI"
 
 - name: Set QA Kubernetes cluster name
   ansible.builtin.set_fact:
     cluster_name: "{{ qa_cluster_name }}"
-  when: env_name == "qa"
+  when: env_name == "QA"

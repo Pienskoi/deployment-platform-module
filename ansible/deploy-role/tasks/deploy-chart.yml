@@ -1,15 +1,15 @@
 ---
 - name: Copy Helm chart
   ansible.builtin.copy:
-    src: "{{ helm_chart_path }}"
-    dest: /helm-chart
+    src: "{{ work_dir }}/{{ helm_chart_path }}"
+    dest: /deploy/chart
 
 - name: Deploy Helm chart
   kubernetes.core.helm:
     name: "{{ helm_release_name }}"
     namespace: "{{ helm_release_namespace }}"
-    chart_ref: /helm-chart
-    kubeconfig: /.kube/config
+    chart_ref: "/deploy/chart"
     values:
       image: "{{ image }}"
       mysql: "{{ mysql }}"
+      loadBalancer: "{{ load_balancer }}"
