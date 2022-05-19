@@ -1,7 +1,7 @@
 properties([
   parameters([
     [$class: 'ChoiceParameter',
-      choiceType: 'SINGLE_SELECT',
+      choiceType: 'PT_SINGLE_SELECT',
       description: 'Pick version number to deploy',
       name: 'DOCKER_IMAGE',
       script: [$class: 'GroovyScript',
