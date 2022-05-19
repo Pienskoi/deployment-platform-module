@@ -4,7 +4,7 @@ controller:
       jobs: |
         jobs:
           - script: >
-              job('Build job') {
+              job('build-job') {
                 label('ansible')
 
                 scm {
@@ -59,7 +59,7 @@ controller:
               }
 
           - script: >
-              job('Deploy job') {
+              job('deploy-job') {
                 label('ansible')
 
                 scm {
@@ -180,7 +180,7 @@ controller:
               }
 
           - script: >
-              pipelineJob('Build pipeline') {
+              pipelineJob('build-pipeline') {
                 definition {
                   cpsScm {
                     lightweight(true)
@@ -213,7 +213,7 @@ controller:
               }
 
           - script: >
-              pipelineJob('Deploy pipeline') {
+              pipelineJob('deploy-pipeline') {
                 definition {
                   cpsScm {
                     lightweight(true)
