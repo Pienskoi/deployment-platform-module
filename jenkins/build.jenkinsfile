@@ -95,7 +95,7 @@ pipeline {
       script {
         if (env.ref != '') {
           build(
-            job: 'deploy-job',
+            job: 'deploy-pipeline',
             parameters: [
               string(name: 'ENV_NAME', value: 'CI'),
               string(name: 'DOCKER_IMAGE', value: 'docker-registry.project.com/spring-petclinic:1')
