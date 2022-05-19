@@ -190,7 +190,7 @@ module "gke_ci" {
 
   node_pools = [{
     name         = "default-node-pool"
-    machine_type = "n1-standard-1"
+    machine_type = "n2-standard-2"
     image_type   = "COS_CONTAINERD"
     autoscaling  = true
     min_count    = 1
