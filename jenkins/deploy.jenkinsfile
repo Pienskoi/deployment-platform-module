@@ -7,9 +7,27 @@ pipeline {
         kind: Pod
         spec:
           containers:
-          - name: google-cloud-sdk
-            image: google/cloud-sdk:latest
-            tty: true
+          - name: gcloud
+            image: google/cloud-sdk:385.0.0
+            command:
+            - sleep
+            args:
+            - 99d
+            volumeMounts:
+            - name: kubeconfig
+              mountPath: /home/jenkins/agent/.kube
+          - name: helm
+            image: alpine/helm:3.8.2
+            command:
+            - sleep
+            args:
+            - 99d
+            volumeMounts:
+            - name: kubeconfig
+              mountPath: /root/.kube
+          volumes:
+          - name: kubeconfig
+            emptyDir: {}
       '''
     }
   }
