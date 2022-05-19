@@ -1,6 +1,10 @@
 controller:
   JCasC:
     configScripts:
+      script-security: |
+        security:
+          globaljobdslsecurityconfiguration:
+            useScriptSecurity: true
       jobs: |
         jobs:
           - script: >
@@ -88,14 +92,41 @@ controller:
                     description('Pick env name')
                     choices(['CI', 'QA'])
                   }
-                  imageTag {
-                    name('DOCKER_IMAGE')
+                  activeChoiceParam('DOCKER_IMAGE') {
+                    choiceType('SINGLE_SELECT')
                     description('Pick version number to deploy')
-                    image('spring-petclinic')
-                    registry('docker-registry.project.com')
-                    credentialId('registry')
-                    defaultTag('latest')
-                    filter('')
+                    groovyScript {
+                      fallbackScript('return ["ERROR"]')
+                      script("""
+                        import groovy.json.JsonSlurper
+                        import jenkins.model.*
+                        
+                        def registry_url = "docker-registry.project.com"
+                        def image = "spring-petclinic"
+                        def registry_credentials = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
+                          com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl, Jenkins.instance, null, null ).find{
+                            it.id == "registry-credentials"}
+                        
+                        def command = "curl -s -u \$registry_credentials.username:\$registry_credentials.password https://\$registry_url/v2/\$image/tags/list"
+                        def proc = command.execute()
+                        proc.waitFor()              
+                        def curl_output = proc.in.text
+                        
+                        def jsonSlurper = new JsonSlurper()
+                        def json_output = jsonSlurper.parseText(curl_output)
+                        def tags_list = []
+                        
+                        for(tag in json_output['tags']) {
+                          def full_image = "\$registry_url/\$image:\$tag"
+                          if(tag == "latest") {
+                            full_image += ":selected"
+                          }
+                          tags_list.push(full_image)
+                        }
+                        
+                        return tags_list
+                      """.stripIndent().trim())
+                    }
                   }
                 }
 
@@ -114,8 +145,13 @@ controller:
                     disableHostKeyChecking(true)
                     extraVars {
                       extraVar {
+                        hidden(false)
+                        key('work_dir')
+                        value('$WORKSPACE/')
+                      }
+                      extraVar {
                         hidden(true)
-                        key('gke_sa_key_path')
+                        key('service_account_key_path')
                         value('$GKE_SA_KEY')
                       }
                       extraVar {
