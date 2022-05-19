@@ -28,14 +28,19 @@ controller:
       local:
         allowsSignup: false
         users:
-        - id: ${admin-credentials-username}
-          name: ${admin-credentials-username}
-          password: ${admin-credentials-password}
+        - id: ${user-credentials-admin-username}
+          name: ${user-credentials-admin-username}
+          password: ${user-credentials-admin-password}
+        - id: ${user-credentials-webhook-username}
+          name: ${user-credentials-webhook-username}
+          password: ${user-credentials-webhook-password}
     authorizationStrategy: |-
       globalMatrix:
         permissions:
           - "GROUP:Overall/Read:authenticated"
-          - "USER:Overall/Administer:${admin-credentials-username}"
+          - "USER:Overall/Administer:${user-credentials-admin-username}"
+          - "USER:Job/Build:${user-credentials-webhook-username}"
+          - "USER:Job/Read:${user-credentials-webhook-username}"
 
 additionalAgents:
   ansible:
