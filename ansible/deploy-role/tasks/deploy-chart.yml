@@ -8,6 +8,7 @@
   kubernetes.core.helm:
     name: "{{ helm_release_name }}"
     namespace: "{{ helm_release_namespace }}"
+    create_namespace: yes
     chart_ref: "/deploy/chart"
     values:
       image: "{{ image }}"

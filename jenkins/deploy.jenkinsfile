@@ -55,25 +55,7 @@ pipeline {
         expression { ENV_NAME == 'CI' }
       }
       steps {
-        withCredentials([
-          string(credentialsId: 'mysql-database', variable: 'MYSQL_DATABASE'),
-          string(credentialsId: 'mysql-username', variable: 'MYSQL_USERNAME'),
-          string(credentialsId: 'mysql-password', variable: 'MYSQL_PASSWORD'),
-          string(credentialsId: 'mysql-connection-name', variable: 'MYSQL_CONNECTION'),
-          string(credentialsId: 'mysql-service-account', variable: 'MYSQL_SA')
-          ]) {
-          sh '''helm upgrade --install spring-petclinic ./spring-petclinic-chart \\
-          --set image=$DOCKER_IMAGE \\
-          --set mysql.enabled=true \\
-          --set mysql.database=$MYSQL_DATABASE \\
-          --set mysql.username=$MYSQL_USERNAME \\
-          --set mysql.password=$MYSQL_PASSWORD \\
-          --set mysql.connectionName=$MYSQL_CONNECTION \\
-          --set mysql.serviceAccount=$MYSQL_SA \\
-          --set loadBalancer.type="external" \\
-          --set loadBalancer.addressName="spring-petclinic-static-ip" \\
-          --set loadBalancer.domains={"spring-petclinic.tk"}'''
-        }
+            sh 'helm upgrade --install spring-petclinic ./spring-petclinic-chart --namespace petclinic --create-namespace'
       }
     }
 
@@ -97,7 +79,7 @@ pipeline {
         expression { ENV_NAME == 'QA' }
       }
       steps {
-        sh 'helm upgrade --install spring-petclinic ./spring-petclinic-chart --set image=$DOCKER_IMAGE --namespace petclinic'
+          sh 'helm upgrade --install spring-petclinic ./spring-petclinic-chart --set image=$DOCKER_IMAGE --namespace petclinic --create-namespace'
       }
     }
   }
