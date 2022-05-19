@@ -43,11 +43,11 @@ spec:
         livenessProbe:
           httpGet:
             path: /
-            port: http
+            port: http-port
         readinessProbe:
           httpGet:
             path: /
-            port: http
+            port: http-port
       {{- if .Values.mysql.enabled }}
       - name: cloud-sql-proxy
         image: gcr.io/cloudsql-docker/gce-proxy:1.30.1
