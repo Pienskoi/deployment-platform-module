@@ -12,6 +12,7 @@ metadata:
     kubernetes.io/ingress.regional-static-ip-name: {{ .Values.loadBalancer.addressName }}
     kubernetes.io/ingress.class: "gce-internal"
     ingress.gcp.kubernetes.io/pre-shared-cert: {{ .Values.loadBalancer.preSharedCert }}
+    kubernetes.io/ingress.allow-http: "false"
     {{- end }}
 spec:
   rules:
