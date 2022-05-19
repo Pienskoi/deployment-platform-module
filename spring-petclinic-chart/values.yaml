@@ -13,7 +13,7 @@ mysql:
   enabled: false
 # Next values should be provided if mysql is enabled:
 # database: petclinic
-# user: petclinic
+# username: petclinic
 # password: petclinic
 # connectionName: cloudsql-connection-name
 # serviceAccount: gcp-service-account
