@@ -95,12 +95,12 @@ pipeline {
       script {
         if (env.ref != '') {
           build(
-            job: 'deploy-pipeline', 
+            job: 'deploy-job',
             parameters: [
               string(name: 'ENV_NAME', value: 'CI'),
-              imageTag(imageName: '$IMAGE', imageTag: '$BUILD_NUMBER', name: 'DOCKER_IMAGE')
+              string(name: 'DOCKER_IMAGE', value: 'docker-registry.project.com/spring-petclinic:1')
             ],
-            propagate: false
+            wait: false
           )
         }
       }
