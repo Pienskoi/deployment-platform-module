@@ -4,11 +4,11 @@ kind: Ingress
 metadata:
   name: {{ .Release.Name }}-ingress
   annotations:
-    {{- if .Values.loadBalancer.type "external" }}
+    {{- if eq .Values.loadBalancer.type "external" }}
     kubernetes.io/ingress.global-static-ip-name: {{ .Values.loadBalancer.addressName }}
     networking.gke.io/managed-certificates: managed-cert
     kubernetes.io/ingress.class: "gce"
-    {{- else if .Values.loadBalancer.type "internal" }}
+    {{- else if eq .Values.loadBalancer.type "internal" }}
     kubernetes.io/ingress.regional-static-ip-name: {{ .Values.loadBalancer.addressName }}
     kubernetes.io/ingress.class: "gce-internal"
     ingress.gcp.kubernetes.io/pre-shared-cert: {{ .Values.loadBalancer.preSharedCert }}

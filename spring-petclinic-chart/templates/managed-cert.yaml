@@ -1,4 +1,4 @@
-{{- if .Values.loadBalancer.type "external" }}
+{{- if eq .Values.loadBalancer.type "external" }}
 ---
 apiVersion: networking.gke.io/v1
 kind: ManagedCertificate
