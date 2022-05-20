@@ -80,8 +80,8 @@ resource "google_compute_firewall" "project_subnet_allow_internal" {
   }
 }
 
-resource "google_compute_firewall" "pods_infr_allow_ssh" {
-  name          = "pods-infr-allow-ssh"
+resource "google_compute_firewall" "pods_infr_ansible_allow_ssh" {
+  name          = "pods-infr-ansible-allow-ssh"
   project       = var.project_id
   network       = module.vpc.network_name
   direction     = "INGRESS"
