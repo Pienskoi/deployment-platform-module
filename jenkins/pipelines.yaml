@@ -4,7 +4,7 @@ controller:
       script-security: |
         security:
           globaljobdslsecurityconfiguration:
-            useScriptSecurity: true
+            useScriptSecurity: false
       jobs: |
         jobs:
           - script: >
