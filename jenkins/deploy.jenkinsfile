@@ -88,6 +88,7 @@ pipeline {
           ]) {
             sh '''cat <<EOF > ci-values.yaml
             image: $DOCKER_IMAGE
+            replicas: 3
             mysql:
               enabled: true
               database: $MYSQL_DATABASE
@@ -149,7 +150,7 @@ pipeline {
         expression { ENV_NAME == 'QA' }
       }
       steps {
-        sh 'helm upgrade --install spring-petclinic ./spring-petclinic-chart --set image=$DOCKER_IMAGE --namespace petclinic --create-namespace'
+        sh 'helm upgrade --install spring-petclinic ./spring-petclinic-chart --set image=$DOCKER_IMAGE  --set replicas=1 --namespace petclinic --create-namespace'
       }
     }
   }

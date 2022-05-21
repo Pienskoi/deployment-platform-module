@@ -1,13 +1,7 @@
-# autoscaling:
-#   enabled: false
-# minReplicas: 1
-# maxReplicas: 100
-# targetCPUUtilizationPercentage: 80
-# replicas: 1
-
 image: docker-registry.project.com/spring-petclinic:latest
 imagePullSecrets: 
   - name: registry-secret
+replicas: 3
 
 mysql:
   enabled: false

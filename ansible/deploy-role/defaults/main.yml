@@ -10,6 +10,7 @@ ci_cluster_name: ci-cluster
 qa_cluster_name: qa-cluster
 env_name: ENV
 image: docker-registry.project.com/spring-petclinic:latest
+replicas: 3
 mysql_database: petclinic
 mysql_username: petclinic
 mysql_password: petclinic

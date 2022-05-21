@@ -12,5 +12,6 @@
     chart_ref: "/deploy/chart"
     values:
       image: "{{ image }}"
+      replicas: "{{ replicas }}"
       mysql: "{{ mysql }}"
       loadBalancer: "{{ load_balancer }}"
