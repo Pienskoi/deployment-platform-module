@@ -19,4 +19,4 @@ loadBalancer:
   preSharedCert: project-cert
 # Public domains should be provided for external Load Balancer 
 # domains:
-# - spring-petclinic.tk 
+# - spring-petclinic.com

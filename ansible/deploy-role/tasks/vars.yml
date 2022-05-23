@@ -14,7 +14,7 @@
       type: "external"
       addressName: "spring-petclinic-static-ip"
       domains:
-      - "spring-petclinic.tk"      
+      - "{{ domain }}"      
   when: env_name == "CI"
 
 - name: Set QA Kubernetes cluster name

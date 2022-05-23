@@ -209,6 +209,11 @@ controller:
                         key('mysql_service_account')
                         value('$MYSQL_SA')
                       }
+                      extraVar {
+                        hidden(false)
+                        key('domain')
+                        value('$DOMAIN')
+                      }
                     }
                   }
                 }

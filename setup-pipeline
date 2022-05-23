@@ -17,6 +17,7 @@
 # JENKINS_ADMIN_PASSWORD - Jenkins admin password
 # JENKINS_WEBHOOK_USERNAME - Jenkins webhook user name
 # JENKINS_WEBHOOK_PASSWORD - Jenkins webhook user password
+# DOMAIN - Global domain name for spring-petclinic CI environment
 
 KEYS=(
   "PROJECT_ID"
@@ -34,6 +35,7 @@ KEYS=(
   "JENKINS_ADMIN_PASSWORD"
   "JENKINS_WEBHOOK_USERNAME"
   "JENKINS_WEBHOOK_PASSWORD"
+  "DOMAIN"
 )
 for ARGUMENT in "$@"; do
   KEY="$(echo "${ARGUMENT}" | cut -f1 -d=)"
@@ -83,6 +85,7 @@ gcloud compute ssl-certificates create project-cert \
   --region "${REGION}"  
 sudo cp ./build/ProjectCA.crt /usr/local/share/ca-certificates/ProjectCA.crt
 sudo update-ca-certificates
+sudo systemctl restart docker
 
 cd ./terraform
 terraform init
@@ -96,6 +99,7 @@ gke_qa_cluster_name             = "${QA_CLUSTER}"
 sql_database_name               = "${SQL_DATABASE}"
 sql_user_name                   = "${SQL_USERNAME}"
 sql_user_password               = "${SQL_PASSWORD}"
+domain                          = "${DOMAIN}"
 EOF
 terraform plan -out ../build/tfplan
 terraform apply ../build/tfplan
@@ -153,7 +157,8 @@ echo ""
 echo "${DOCKER_PASSWORD}" | docker login https://docker-registry.project.com -u "${DOCKER_USERNAME}" --password-stdin
 docker build -t docker-registry.project.com/ansible:1.0.0 -f ./ansible/ansible.dockerfile ./ansible
 docker push docker-registry.project.com/ansible:1.0.0
-docker build -t docker-registry.project.com/jenkins:1.0.0 -f ./jenkins/jenkins.dockerfile ./jenkins
+cp ./build/ProjectCA.crt ./jenkins/ProjectCA.crt
+docker build -t docker-registry.project.com/jenkins:1.0.0 -f ./jenkins/jenkins.dockerfile --build-arg CERT_PATH=ProjectCA.crt ./jenkins
 docker push docker-registry.project.com/jenkins:1.0.0
 docker build -t docker-registry.project.com/gcloud-helm:1.0.0 -f ./jenkins/gcloud-helm.dockerfile ./jenkins
 docker push docker-registry.project.com/gcloud-helm:1.0.0
@@ -188,7 +193,7 @@ kubectl create secret generic user-credentials \
 kubectl create secret generic registry-credentials \
   --from-literal username="${DOCKER_USERNAME}" \
   --from-literal password="${DOCKER_PASSWORD}"
-kubectl delete secret certs-secret --ignore-not-found
+kubectl create secret generic lb-details --from-literal domain="${DOMAIN}"
 kubectl create secret tls certs-secret \
   --cert=./build/ProjectCA.crt \
   --key=./build/ProjectCA.key
@@ -208,7 +213,6 @@ kubectl apply -f ./certs/kubernetes.yaml
 
 for CLUSTER in "${CI_CLUSTER}" "${QA_CLUSTER}"; do
   gcloud container clusters get-credentials "${CLUSTER}" --region "${REGION}"
-  kubectl delete secret certs-secret --ignore-not-found --namespace kube-system
   kubectl create secret tls certs-secret \
     --cert=./build/ProjectCA.crt \
     --key=./build/ProjectCA.key \

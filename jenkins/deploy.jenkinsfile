@@ -85,6 +85,7 @@ pipeline {
           string(credentialsId: 'mysql-password', variable: 'MYSQL_PASSWORD'),
           string(credentialsId: 'mysql-connection-name', variable: 'MYSQL_CONNECTION'),
           string(credentialsId: 'mysql-service-account', variable: 'MYSQL_SA')
+          string(credentialsId: 'domain', variable: 'DOMAIN')
           ]) {
             sh '''cat <<EOF > ci-values.yaml
             image: $DOCKER_IMAGE
@@ -100,7 +101,7 @@ pipeline {
               type: external
               addressName: spring-petclinic-static-ip
               domains:
-              - spring-petclinic.tk
+              - $DOMAIN
             '''.stripIndent()
         }
       }

@@ -492,7 +492,7 @@ module "dns_public_zone" {
   project_id = var.project_id
   type       = "public"
   name       = "spring-petclinic-tk"
-  domain     = "spring-petclinic.tk."
+  domain     = "${var.domain}."
 
   private_visibility_config_networks = [module.vpc.network_self_link]
 

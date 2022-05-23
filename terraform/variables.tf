@@ -35,3 +35,7 @@ variable "sql_user_password" {
   type      = string
   sensitive = true
 }
+
+variable "domain" {
+  type = string
+}
