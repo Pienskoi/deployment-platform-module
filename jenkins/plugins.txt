@@ -6,5 +6,6 @@ job-dsl:1.78.3
 matrix-auth:3.1
 kubernetes:3580.v78271e5631dc
 workflow-aggregator:2.7
+pipeline-stage-view:2.24
 git:4.11.3
 ansible:1.1
