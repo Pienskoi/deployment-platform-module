@@ -5,9 +5,7 @@
 # PROJECT_ID - GCP Project ID
 # REGION - Region where all regional resources will bedeployed
 # ZONE - Zone where all zonal resiurces will be deployed
-# INFR_CLUSTER - Name of cluster where Docker registry and Jenkins charts will be deployed
-# CI_CLUSTER - Name of cluster where CI environment of spring-petclinic will be deployed
-# QA_CLUSTER - Name of cluster where QA environment of spring-petclinic will be deployed
+# CLUSTER - Name of GKE cluster 
 # SQL_DATABASE - Spring-petclinic database name
 # SQL_USERNAME - Username for connecting to spring-petclinic database
 # SQL_PASSWORD - Password for connecting to spring-petclinic database
@@ -23,9 +21,7 @@ KEYS=(
   "PROJECT_ID"
   "REGION"
   "ZONE"
-  "INFR_CLUSTER"
-  "CI_CLUSTER"
-  "QA_CLUSTER"
+  "CLUSTER"
   "SQL_DATABASE"
   "SQL_USERNAME"
   "SQL_PASSWORD"
@@ -90,16 +86,14 @@ sudo systemctl restart docker
 cd ./terraform
 terraform init
 cat <<EOF > terraform.tfvars
-project_id                      = "${PROJECT_ID}"
-region                          = "${REGION}"
-zone                            = "${ZONE}"
-gke_infrastructure_cluster_name = "${INFR_CLUSTER}"
-gke_ci_cluster_name             = "${CI_CLUSTER}"
-gke_qa_cluster_name             = "${QA_CLUSTER}"
-sql_database_name               = "${SQL_DATABASE}"
-sql_user_name                   = "${SQL_USERNAME}"
-sql_user_password               = "${SQL_PASSWORD}"
-domain                          = "${DOMAIN}"
+project_id        = "${PROJECT_ID}"
+region            = "${REGION}"
+zone              = "${ZONE}"
+gke_cluster_name  = "${CLUSTER}"
+sql_database_name = "${SQL_DATABASE}"
+sql_user_name     = "${SQL_USERNAME}"
+sql_user_password = "${SQL_PASSWORD}"
+domain            = "${DOMAIN}"
 EOF
 terraform plan -out ../build/tfplan
 terraform apply ../build/tfplan
@@ -142,7 +136,7 @@ sudo wg-quick up ./build/wg0-client.conf
 cp ./build/project.com.crt ./docker-registry-chart/project.com.crt
 cp ./build/project.com.key ./docker-registry-chart/project.com.key
 docker run --entrypoint htpasswd httpd:2 -Bbn "${DOCKER_USERNAME}" "${DOCKER_PASSWORD}" > ./docker-registry-chart/htpasswd
-gcloud container clusters get-credentials "${INFR_CLUSTER}" --region "${REGION}"
+gcloud container clusters get-credentials "${CLUSTER}" --region "${REGION}"
 helm upgrade --install docker-registry ./docker-registry-chart/ \
   --set storageBucketName="${BUCKET_NAME}" \
   --namespace docker-registry \
@@ -163,12 +157,16 @@ docker push docker-registry.project.com/jenkins:1.0.0
 docker build -t docker-registry.project.com/gcloud-helm:1.0.0 -f ./jenkins/gcloud-helm.dockerfile ./jenkins
 docker push docker-registry.project.com/gcloud-helm:1.0.0
 
-kubectl create namespace jenkins
+for NAMESPACE in "jenkins" "petclinic-ci" "petclinic-qa"; do
+  kubectl create namespace "${NAMESPACE}"
+  kubectl create secret docker-registry registry-secret \
+    --docker-server=https://docker-registry.project.com \
+    --docker-username="${DOCKER_USERNAME}" \
+    --docker-password="${DOCKER_PASSWORD}" \
+    --namespace "${NAMESPACE}"
+done
+
 kubectl config set-context --current --namespace=jenkins
-kubectl create secret docker-registry registry-secret \
-  --docker-server=https://docker-registry.project.com \
-  --docker-username="${DOCKER_USERNAME}" \
-  --docker-password="${DOCKER_PASSWORD}"
 kubectl create secret generic ansible-ssh \
   --from-literal username="${OS_LOGIN_USERNAME}" \
   --from-file key=./build/os-login-ssh-key
@@ -177,8 +175,7 @@ kubectl create secret generic gke-service-account --from-file key=./build/gke-sa
 kubectl create secret generic cluster-details \
   --from-literal location="${REGION}" \
   --from-literal project-id="${PROJECT_ID}" \
-  --from-literal ci-cluster-name="${CI_CLUSTER}" \
-  --from-literal qa-cluster-name="${QA_CLUSTER}"
+  --from-literal name="${CLUSTER}"
 kubectl create secret generic mysql-credentials \
   --from-literal database="${SQL_DATABASE}" \
   --from-literal username="${SQL_USERNAME}" \
@@ -210,21 +207,6 @@ kubectl create secret tls certs-secret \
   --key=./build/ProjectCA.key \
   --namespace kube-system
 kubectl apply -f ./certs/kubernetes.yaml
-
-for CLUSTER in "${CI_CLUSTER}" "${QA_CLUSTER}"; do
-  gcloud container clusters get-credentials "${CLUSTER}" --region "${REGION}"
-  kubectl create secret tls certs-secret \
-    --cert=./build/ProjectCA.crt \
-    --key=./build/ProjectCA.key \
-    --namespace kube-system
-  kubectl apply -f ./certs/kubernetes.yaml
-  kubectl create namespace petclinic
-  kubectl create secret docker-registry registry-secret \
-    --docker-server=https://docker-registry.project.com \
-    --docker-username="${DOCKER_USERNAME}" \
-    --docker-password="${DOCKER_PASSWORD}" \
-    --namespace petclinic
-done
 
 export ANSIBLE_HOST_KEY_CHECKING=False
 sed -i -e "s;PROJECT_ID;${PROJECT_ID};" -e "s;ANSIBLE_SA_KEY_PATH;$(pwd)/build/os-login-sa.json;" ./ansible/inventory.gcp.yml

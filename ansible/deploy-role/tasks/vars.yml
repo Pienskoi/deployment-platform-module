@@ -1,7 +1,7 @@
 ---
 - name: Set CI Kubernetes cluster name
   ansible.builtin.set_fact:
-    cluster_name: "{{ ci_cluster_name }}"
+    helm_release_namespace: "petclinic-ci"
     replicas: 3
     mysql:
       enabled: True
@@ -19,7 +19,7 @@
 
 - name: Set QA Kubernetes cluster name
   ansible.builtin.set_fact:
-    cluster_name: "{{ qa_cluster_name }}"
+    helm_release_namespace: "petclinic-qa"
     replicas: 1
     mysql:
       enable: False

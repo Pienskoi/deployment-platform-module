@@ -10,15 +10,7 @@ variable "zone" {
   type = string
 }
 
-variable "gke_infrastructure_cluster_name" {
-  type = string
-}
-
-variable "gke_ci_cluster_name" {
-  type = string
-}
-
-variable "gke_qa_cluster_name" {
+variable "gke_cluster_name" {
   type = string
 }
 

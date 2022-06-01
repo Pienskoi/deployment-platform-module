@@ -65,6 +65,10 @@ pipeline {
     choice(name: 'ENV_NAME', choices: ['CI', 'QA'], description: 'Pick env name')
   }
 
+  environment {
+    NAMESPACE = "${params.ENV_NAME == 'CI' ? 'petclinic-ci' : 'petclinic-qa'}"
+  }
+
   stages {
     stage('Login with service account') {
       steps {
@@ -87,7 +91,7 @@ pipeline {
           string(credentialsId: 'mysql-service-account', variable: 'MYSQL_SA')
           string(credentialsId: 'domain', variable: 'DOMAIN')
           ]) {
-            sh '''cat <<EOF > ci-values.yaml
+            sh '''cat <<EOF > values.yaml
             image: $DOCKER_IMAGE
             replicas: 3
             mysql:
@@ -107,51 +111,39 @@ pipeline {
       }
     }
 
-    stage('Get CI cluster credentials') {
-      when {
-        expression { ENV_NAME == 'CI' }
-      }
-      steps {
-        withCredentials([
-          string(credentialsId: 'ci-cluster-name', variable: 'CI_CLUSTER_NAME'),
-          string(credentialsId: 'cluster-location', variable: 'LOCATION'),
-          string(credentialsId: 'project-id', variable: 'PROJECT_ID')
-          ]) {
-            sh 'gcloud container clusters get-credentials $CI_CLUSTER_NAME --zone $LOCATION --project $PROJECT_ID'
-        }
-      }
-    }
-
-    stage('Install Helm Release on CI env') {
-      when {
-        expression { ENV_NAME == 'CI' }
-      }
-      steps {
-        sh 'helm upgrade --install spring-petclinic ./spring-petclinic-chart -f ci-values.yaml  --namespace petclinic --create-namespace'
-      }
-    }
-
-    stage('Get QA cluster credentials') {
+    stage('Create Helm Values file for QA env') {
       when {
         expression { ENV_NAME == 'QA' }
       }
       steps {
+        sh '''cat <<EOF > values.yaml
+        image: $DOCKER_IMAGE
+        replicas: 1
+        mysql:
+          enabled: false
+        loadBalancer:
+          type: internal
+          addressName: "internal-spring-petclinic-ip"
+          preSharedCert: "project-cert"
+        '''.stripIndent()
+      }
+    }
+
+    stage('Get cluster credentials') {
+      steps {
         withCredentials([
-          string(credentialsId: 'qa-cluster-name', variable: 'QA_CLUSTER_NAME'),
+          string(credentialsId: 'cluster-name', variable: 'CLUSTER_NAME'),
           string(credentialsId: 'cluster-location', variable: 'LOCATION'),
           string(credentialsId: 'project-id', variable: 'PROJECT_ID')
           ]) {
-            sh 'gcloud container clusters get-credentials $QA_CLUSTER_NAME --region $LOCATION --project $PROJECT_ID'
+            sh 'gcloud container clusters get-credentials $CLUSTER_NAME --zone $LOCATION --project $PROJECT_ID'
         }
       }
     }
 
-    stage('Install Helm release on QA env') {
-      when {
-        expression { ENV_NAME == 'QA' }
-      }
+    stage('Install Helm Release') {
       steps {
-        sh 'helm upgrade --install spring-petclinic ./spring-petclinic-chart --set image=$DOCKER_IMAGE  --set replicas=1 --namespace petclinic --create-namespace'
+        sh 'helm upgrade --install spring-petclinic ./spring-petclinic-chart -f values.yaml --namespace $NAMESPACE --create-namespace'
       }
     }
   }

@@ -76,8 +76,7 @@ controller:
                     file('GKE_SA_KEY', 'gke-service-account')
                     string('LOCATION', 'cluster-location')
                     string('PROJECT_ID', 'project-id')
-                    string('CI_CLUSTER_NAME', 'ci-cluster-name')
-                    string('QA_CLUSTER_NAME', 'qa-cluster-name')
+                    string('CLUSTER_NAME', 'cluster-name')
                     string('MYSQL_DATABASE', 'mysql-database')
                     string('MYSQL_USERNAME', 'mysql-username')
                     string('MYSQL_PASSWORD', 'mysql-password')
@@ -166,13 +165,8 @@ controller:
                       }
                       extraVar {
                         hidden(false)
-                        key('ci_cluster_name')
-                        value('$CI_CLUSTER_NAME')
-                      }
-                      extraVar {
-                        hidden(false)
-                        key('qa_cluster_name')
-                        value('$QA_CLUSTER_NAME')
+                        key('cluster_name')
+                        value('$CLUSTER_NAME')
                       }
                       extraVar {
                         hidden(false)

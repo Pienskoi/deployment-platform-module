@@ -31,28 +31,12 @@ module "subnets" {
   secondary_ranges = {
     project-subnet = [
       {
-        range_name    = "ip-range-pods-infr"
+        range_name    = "gke-ip-range-pods"
         ip_cidr_range = "10.1.0.0/16"
       },
       {
-        range_name    = "ip-range-svc-infr"
+        range_name    = "gke-ip-range-svc"
         ip_cidr_range = "10.4.0.0/20"
-      },
-      {
-        range_name    = "ip-range-pods-ci"
-        ip_cidr_range = "10.2.0.0/16"
-      },
-      {
-        range_name    = "ip-range-svc-ci"
-        ip_cidr_range = "10.4.16.0/20"
-      },
-      {
-        range_name    = "ip-range-pods-qa"
-        ip_cidr_range = "10.3.0.0/16"
-      },
-      {
-        range_name    = "ip-range-svc-qa"
-        ip_cidr_range = "10.4.32.0/20"
       }
     ]
   }
@@ -81,7 +65,7 @@ resource "google_compute_firewall" "project_subnet_allow_internal" {
 }
 
 resource "google_compute_firewall" "pods_infr_ansible_allow_ssh" {
-  name          = "pods-infr-ansible-allow-ssh"
+  name          = "gke-pods-ansible-allow-ssh"
   project       = var.project_id
   network       = module.vpc.network_name
   direction     = "INGRESS"
@@ -109,27 +93,29 @@ module "cloud_router" {
   }]
 }
 
-module "gke_infrastructure" {
+module "gke_cluster" {
   source  = "terraform-google-modules/kubernetes-engine/google//modules/safer-cluster"
   version = "~> 20.0"
 
   project_id        = var.project_id
-  name              = var.gke_infrastructure_cluster_name
+  name              = var.gke_cluster_name
   region            = var.region
   zones             = [var.zone]
   network           = module.vpc.network_name
   subnetwork        = module.subnets.subnets["${var.region}/project-subnet"].name
-  ip_range_pods     = "ip-range-pods-infr"
-  ip_range_services = "ip-range-svc-infr"
+  ip_range_pods     = "gke-ip-range-pods"
+  ip_range_services = "gke-ip-range-svc"
 
-  node_pools = [{
-    name         = "default-node-pool"
-    machine_type = "n2-standard-2"
-    image_type   = "COS_CONTAINERD"
-    autoscaling  = true
-    min_count    = 1
-    max_count    = 3
-  }]
+  node_pools = [
+    {
+      name         = "default-node-pool"
+      machine_type = "n2-standard-2"
+      image_type   = "COS_CONTAINERD"
+      autoscaling  = true
+      min_count    = 1
+      max_count    = 10
+    }
+  ]
 
   master_ipv4_cidr_block = "10.0.0.0/28"
   master_authorized_networks = [
@@ -140,89 +126,19 @@ module "gke_infrastructure" {
   ]
 }
 
-module "gke_qa" {
-  source  = "terraform-google-modules/kubernetes-engine/google//modules/safer-cluster"
-  version = "~> 20.0"
-
-  project_id        = var.project_id
-  name              = var.gke_qa_cluster_name
-  region            = var.region
-  zones             = [var.zone]
-  network           = module.vpc.network_name
-  subnetwork        = module.subnets.subnets["${var.region}/project-subnet"].name
-  ip_range_pods     = "ip-range-pods-qa"
-  ip_range_services = "ip-range-svc-qa"
-
-  node_pools = [{
-    name         = "default-node-pool"
-    machine_type = "n1-standard-1"
-    image_type   = "COS_CONTAINERD"
-    autoscaling  = true
-    min_count    = 1
-    max_count    = 10
-  }]
-
-  master_ipv4_cidr_block = "10.0.0.16/28"
-  master_authorized_networks = [
-    {
-      cidr_block   = module.subnets.subnets["${var.region}/project-subnet"].ip_cidr_range
-      display_name = "VPC project-subnet"
-    },
-    {
-      cidr_block   = module.subnets.subnets["${var.region}/project-subnet"].secondary_ip_range[0].ip_cidr_range
-      display_name = "Infrastructure cluster pods"
-    }
-  ]
-}
-
-module "gke_ci" {
-  source  = "terraform-google-modules/kubernetes-engine/google//modules/safer-cluster"
-  version = "~> 20.0"
-
-  project_id        = var.project_id
-  name              = var.gke_ci_cluster_name
-  region            = var.region
-  zones             = [var.zone]
-  network           = module.vpc.network_name
-  subnetwork        = module.subnets.subnets["${var.region}/project-subnet"].name
-  ip_range_pods     = "ip-range-pods-ci"
-  ip_range_services = "ip-range-svc-ci"
-
-  node_pools = [{
-    name         = "default-node-pool"
-    machine_type = "n2-standard-2"
-    image_type   = "COS_CONTAINERD"
-    autoscaling  = true
-    min_count    = 1
-    max_count    = 10
-  }]
-
-  master_ipv4_cidr_block = "10.0.0.32/28"
-  master_authorized_networks = [
-    {
-      cidr_block   = module.subnets.subnets["${var.region}/project-subnet"].ip_cidr_range
-      display_name = "VPC project-subnet"
-    },
-    {
-      cidr_block   = module.subnets.subnets["${var.region}/project-subnet"].secondary_ip_range[0].ip_cidr_range
-      display_name = "Infrastructure cluster pods"
-    }
-  ]
-}
-
 module "workload_identity" {
   source  = "terraform-google-modules/kubernetes-engine/google//modules/workload-identity"
   version = "~> 20.0"
 
   project_id          = var.project_id
   name                = "mysql-workload-identity"
-  namespace           = "petclinic"
+  namespace           = "petclinic-ci"
   use_existing_k8s_sa = true
   k8s_sa_name         = "sql-proxy-sa"
   annotate_k8s_sa     = false
   roles               = ["roles/cloudsql.client"]
 
-  depends_on = [module.gke_ci.name]
+  depends_on = [module.gke_cluster.name]
 }
 
 module "service_accounts" {
