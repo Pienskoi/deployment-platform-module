@@ -1,10 +1,6 @@
 controller:
   JCasC:
     configScripts:
-      script-security: |
-        security:
-          globaljobdslsecurityconfiguration:
-            useScriptSecurity: false
       jobs: |
         jobs:
           - script: >
