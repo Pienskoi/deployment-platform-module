@@ -63,9 +63,5 @@ spec:
           - "-instances={{ .Values.mysql.connectionName }}=tcp:3306"
         securityContext:
           runAsNonRoot: true
-        resources:
-          requests:
-            memory: "2Gi"
-            cpu: "1"
       {{- end }}
 
