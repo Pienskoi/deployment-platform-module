@@ -12,17 +12,17 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   namespace: kube-system
-  name: node-custom-setup
+  name: certs-setup
   labels:
-    k8s-app: node-custom-setup
+    app: certs-setup
 spec:
   selector:
     matchLabels:
-      k8s-app: node-custom-setup
+      app: certs-setup
   template:
     metadata:
       labels:
-        k8s-app: node-custom-setup
+        app: certs-setup
     spec:
       hostPID: true
       hostNetwork: true
