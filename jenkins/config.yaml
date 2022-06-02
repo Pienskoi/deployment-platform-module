@@ -3,6 +3,8 @@ controller:
   tag: "1.0.0"
   imagePullSecretName: "registry-secret"
   installPlugins: false
+  nodeSelector:
+    cloud.google.com/gke-nodepool: default-node-pool
   
   jenkinsUrlProtocol: "https" 	
   ingress:
@@ -41,6 +43,10 @@ controller:
           - "USER:Overall/Administer:${user-credentials-admin-username}"
           - "USER:Job/Build:${user-credentials-webhook-username}"
           - "USER:Job/Read:${user-credentials-webhook-username}"
+
+agent:
+  nodeSelector:
+    cloud.google.com/gke-nodepool: default-node-pool
 
 additionalAgents:
   ansible:

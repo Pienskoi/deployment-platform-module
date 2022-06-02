@@ -15,9 +15,13 @@ spec:
       labels:
         app: spring-petclinic
     spec:
-      {{- with .Values.imagePullSecrets }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
       {{- end }}
       {{- if .Values.mysql.enabled }}
       serviceAccountName: sql-proxy-sa

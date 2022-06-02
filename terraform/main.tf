@@ -113,6 +113,14 @@ module "gke_cluster" {
       image_type   = "COS_CONTAINERD"
       autoscaling  = true
       min_count    = 1
+      max_count    = 3
+    },
+    {
+      name         = "app-node-pool"
+      machine_type = "n1-standard-1"
+      image_type   = "COS_CONTAINERD"
+      autoscaling  = true
+      min_count    = 1
       max_count    = 10
     }
   ]

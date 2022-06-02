@@ -2,6 +2,8 @@ image: docker-registry.project.com/spring-petclinic:latest
 imagePullSecrets: 
   - name: registry-secret
 replicas: 3
+nodeSelector:
+  cloud.google.com/gke-nodepool: app-node-pool
 
 mysql:
   enabled: false
