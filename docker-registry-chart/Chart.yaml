@@ -1,5 +1,5 @@
 apiVersion: v2
-name: sdocker-registry-chart
+name: docker-registry-chart
 description: A Helm chart for deploying Private Docker Registry
 type: application
 version: 1.0.0

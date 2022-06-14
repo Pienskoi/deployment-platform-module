@@ -4,16 +4,16 @@ kind: Deployment
 metadata:
   name: {{ .Release.Name }}-deployment
   labels:
-    app: spring-petclinic
+    {{- include "spring-petclinic.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
-      app: spring-petclinic
+      {{- include "spring-petclinic.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: spring-petclinic
+        {{- include "spring-petclinic.selectorLabels" . | nindent 8 }}
     spec:
       {{- if .Values.nodeSelector }}
       nodeSelector:

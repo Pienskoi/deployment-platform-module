@@ -4,6 +4,8 @@ apiVersion: networking.gke.io/v1
 kind: ManagedCertificate
 metadata:
   name: managed-cert
+  labels:
+    {{- include "spring-petclinic.labels" . | nindent 4 }}
 spec:
   {{- with .Values.loadBalancer.domains }}
   domains:

@@ -3,6 +3,8 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Release.Name }}-ingress
+  labels:
+    {{- include "spring-petclinic.labels" . | nindent 4 }}
   annotations:
     {{- if eq .Values.loadBalancer.type "external" }}
     kubernetes.io/ingress.global-static-ip-name: {{ .Values.loadBalancer.addressName }}
