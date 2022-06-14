@@ -6,11 +6,11 @@ nodeSelector:
   cloud.google.com/gke-nodepool: app-node-pool
 
 mysql:
-  enabled: false
-# Next values should be provided if mysql is enabled:
-# database: petclinic
-# username: petclinic
-# password: petclinic
+  database: petclinic
+  username: petclinic
+  password: petclinic
+  cloudsqlProxy: false
+# Next values should be provided if cloudsqlProxy is true:
 # connectionName: cloudsql-connection-name
 # serviceAccount: gcp-service-account
 

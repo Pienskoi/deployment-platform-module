@@ -95,10 +95,10 @@ pipeline {
             image: $DOCKER_IMAGE
             replicas: 3
             mysql:
-              enabled: true
               database: $MYSQL_DATABASE
               username: $MYSQL_USERNAME
               password: $MYSQL_PASSWORD
+              cloudsqlProxy: true
               connectionName: $MYSQL_CONNECTION
               serviceAccount: $MYSQL_SA
             loadBalancer:
@@ -116,16 +116,19 @@ pipeline {
         expression { ENV_NAME == 'QA' }
       }
       steps {
-        sh '''cat <<EOF > values.yaml
-        image: $DOCKER_IMAGE
-        replicas: 1
-        mysql:
-          enabled: false
-        loadBalancer:
-          type: internal
-          addressName: "internal-spring-petclinic-ip"
-          preSharedCert: "project-cert"
-        '''.stripIndent()
+        withCredentials([
+          string(credentialsId: 'mysql-database', variable: 'MYSQL_DATABASE'),
+          string(credentialsId: 'mysql-username', variable: 'MYSQL_USERNAME'),
+          string(credentialsId: 'mysql-password', variable: 'MYSQL_PASSWORD'),
+          ]) {
+            sh '''cat <<EOF > values.yaml
+            image: $DOCKER_IMAGE
+            mysql:
+              database: $MYSQL_DATABASE
+              username: $MYSQL_USERNAME
+              password: $MYSQL_PASSWORD
+            '''.stripIndent()
+        }
       }
     }
 

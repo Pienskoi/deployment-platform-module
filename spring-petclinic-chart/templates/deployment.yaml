@@ -23,7 +23,7 @@ spec:
       imagePullSecrets:
         {{- toYaml .Values.imagePullSecrets | nindent 8 }}
       {{- end }}
-      {{- if .Values.mysql.enabled }}
+      {{- if .Values.mysql.cloudsqlProxy }}
       serviceAccountName: sql-proxy-sa
       {{- end }}
       containers:
@@ -34,7 +34,6 @@ spec:
         - name: http-port
           protocol: TCP
           containerPort: 8080
-        {{- if .Values.mysql.enabled }}
         env:
         - name: MYSQL_URL
           value: "jdbc:mysql://127.0.0.1:3306/{{ .Values.mysql.database }}"
@@ -43,7 +42,6 @@ spec:
         - name: MYSQL_PASS
           value: {{ .Values.mysql.password }}
         args: ["--spring.profiles.active=mysql"]
-        {{- end }}
         livenessProbe:
           httpGet:
             path: /
@@ -53,7 +51,7 @@ spec:
           httpGet:
             path: /
             port: http-port
-      {{- if .Values.mysql.enabled }}
+      {{- if .Values.mysql.cloudsqlProxy }}
       - name: cloud-sql-proxy
         image: gcr.io/cloudsql-docker/gce-proxy:1.30.1
         command:
@@ -63,5 +61,27 @@ spec:
           - "-instances={{ .Values.mysql.connectionName }}=tcp:3306"
         securityContext:
           runAsNonRoot: true
+      {{- else }}
+      - name: mysql
+        image: mysql:5.7
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: {{ .Values.mysql.password }}
+        - name: MYSQL_USER
+          value: {{ .Values.mysql.username }}
+        - name: MYSQL_PASSWORD
+          values: {{ .Values.mysql.password }}
+        - name: MYSQL_DATABASE
+          values: {{ .Values.mysql.database }}
+        ports:
+        - name: mysql-port
+          protocol: TCP
+          containerPort: 3306
+        volumeMounts:
+        - name: mysql-volume
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-volume
+        emptyDir: {}
       {{- end }}
 
