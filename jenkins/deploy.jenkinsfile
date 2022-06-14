@@ -93,7 +93,12 @@ pipeline {
           ]) {
             sh '''cat <<EOF > values.yaml
             image: $DOCKER_IMAGE
-            replicas: 3
+            autoscaling:
+              enabled: True
+              minReplicas: 1
+              maxReplicas: 5
+              targetCPUUtilizationPercentage: 60
+              targetMemoryUtilizationPercentage: 60
             mysql:
               database: $MYSQL_DATABASE
               username: $MYSQL_USERNAME

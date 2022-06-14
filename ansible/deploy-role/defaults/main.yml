@@ -6,9 +6,8 @@ service_account_key_path: service-account.json
 location: location
 project_id: project-id
 cluster_name: project-cluster
-env_name: ENV
+env_name: CI/QA
 image: docker-registry.project.com/spring-petclinic:latest
-replicas: 3
 mysql_database: petclinic
 mysql_username: petclinic
 mysql_password: petclinic

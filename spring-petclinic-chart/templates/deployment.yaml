@@ -6,7 +6,9 @@ metadata:
   labels:
     {{- include "spring-petclinic.labels" . | nindent 4 }}
 spec:
+  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicas }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "spring-petclinic.selectorLabels" . | nindent 6 }}
