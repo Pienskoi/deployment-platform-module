@@ -50,6 +50,15 @@ done
 
 ACCOUNT="$(gcloud config get account)"
 gcloud config set project "${PROJECT_ID}"
+gcloud services enable \
+  compute.googleapis.com \
+  container.googleapis.com \
+  storage-api.googleapis.com \
+  sqladmin.googleapis.com \
+  servicenetworking.googleapis.com \
+  cloudresourcemanager.googleapis.com \
+  iam.googleapis.com \
+  dns.googleapis.com
 
 mkdir build
 openssl req -new -sha256 -nodes -newkey rsa:2048 \
