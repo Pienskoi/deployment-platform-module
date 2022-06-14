@@ -210,35 +210,24 @@ controller:
               }
 
           - script: >
-              pipelineJob('build-pipeline') {
-                definition {
-                  cpsScm {
-                    lightweight(true)
-                    scm {
-                      github('Pienskoi/DevOpsProject', 'main')  
-                    }
+              multibranchPipelineJob('build-pipeline') {
+                branchSources {
+                  github {
+                    id('1')
+                    repoOwner('Pienskoi')
+                    repository('DevOpsProject')
+                    includes('main|develop')
+                  }
+                }
+
+                factory {
+                  workflowBranchProjectFactory {
                     scriptPath('jenkins/build.jenkinsfile')
                   }
                 }
 
                 triggers {
-                  GenericTrigger {
-                    genericVariables {
-                      genericVariable {
-                        key('ref')
-                        value('$.ref')
-                        defaultValue('')
-                      }
-                      genericVariable {
-                        key('action')
-                        value('$.action')
-                        defaultValue('')
-                      }
-                    }
-                    causeString('Triggered on $ref$action')
-                    regexpFilterText('$ref$action')
-                    regexpFilterExpression('^(refs/heads/(main|develop)|opened|reopened|synchronize)$')
-                  }
+                  githubPush()
                 }
               }
 

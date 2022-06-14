@@ -23,7 +23,7 @@ controller:
       kubernetes.io/ingress.global-static-ip-name: "jenkins-webhook-static-ip"
       kubernetes.io/ingress.class: "gce"
     paths:
-    - /generic-webhook-trigger/invoke
+    - /github-webhook
 
   JCasC:
     securityRealm: |-
@@ -41,8 +41,6 @@ controller:
         permissions:
           - "GROUP:Overall/Read:authenticated"
           - "USER:Overall/Administer:${user-credentials-admin-username}"
-          - "USER:Job/Build:${user-credentials-webhook-username}"
-          - "USER:Job/Read:${user-credentials-webhook-username}"
 
 agent:
   nodeSelector:

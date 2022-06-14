@@ -37,15 +37,7 @@ pipeline {
   }
 
   triggers {
-    GenericTrigger(
-     genericVariables: [
-      [key: 'ref', value: '$.ref', defaultValue: ''],
-      [key: 'action', value: '$.action', defaultValue: '']
-     ],
-     causeString: 'Triggered on $ref$action',
-     regexpFilterText: '$ref$action',
-     regexpFilterExpression: '^(refs/heads/(main|develop)|opened|reopened|synchronize)$'
-    )
+    githubPush()
   }
 
   environment {
@@ -93,7 +85,7 @@ pipeline {
   post {
     success {
       script {
-        if (env.ref != '') {
+        if (env.BRANCH_NAME == 'main') {
           build(
             job: 'deploy-pipeline',
             parameters: [

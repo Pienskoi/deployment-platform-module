@@ -13,8 +13,6 @@
 # DOCKER_PASSWORD - Docker registry user password
 # JENKINS_ADMIN_USERNAME - Jenkins admin username
 # JENKINS_ADMIN_PASSWORD - Jenkins admin password
-# JENKINS_WEBHOOK_USERNAME - Jenkins webhook user name
-# JENKINS_WEBHOOK_PASSWORD - Jenkins webhook user password
 # DOMAIN - Global domain name for spring-petclinic CI environment
 
 KEYS=(
@@ -29,8 +27,6 @@ KEYS=(
   "DOCKER_PASSWORD"
   "JENKINS_ADMIN_USERNAME"
   "JENKINS_ADMIN_PASSWORD"
-  "JENKINS_WEBHOOK_USERNAME"
-  "JENKINS_WEBHOOK_PASSWORD"
   "DOMAIN"
 )
 for ARGUMENT in "$@"; do
@@ -193,9 +189,7 @@ kubectl create secret generic mysql-credentials \
   --from-literal service-account="${SQL_SA}"
 kubectl create secret generic user-credentials \
   --from-literal admin-username="${JENKINS_ADMIN_USERNAME}" \
-  --from-literal admin-password="${JENKINS_ADMIN_PASSWORD}" \
-  --from-literal webhook-username="${JENKINS_WEBHOOK_USERNAME}" \
-  --from-literal webhook-password="${JENKINS_WEBHOOK_PASSWORD}"
+  --from-literal admin-password="${JENKINS_ADMIN_PASSWORD}"
 kubectl create secret generic registry-credentials \
   --from-literal username="${DOCKER_USERNAME}" \
   --from-literal password="${DOCKER_PASSWORD}"
@@ -227,4 +221,4 @@ ansible-playbook -i ./ansible/inventory.gcp.yml \
 echo "Add nameservers to domain config:
 ${NAMESERVERS}"
 echo "Create GitHub webhook with Push and Pull Request events to URL:
-http://${JENKINS_WEBHOOK_USERNAME}:${JENKINS_WEBHOOK_PASSWORD}@${JENKINS_WEBHOOK_IP}/generic-trigger-webhook/invoke"
+http://${JENKINS_WEBHOOK_IP}/github-webhook"
