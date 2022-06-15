@@ -221,4 +221,4 @@ ansible-playbook -i ./ansible/inventory.gcp.yml \
 echo "Add nameservers to domain config:
 ${NAMESERVERS}"
 echo "Create GitHub webhook with Push and Pull Request events to URL:
-http://${JENKINS_WEBHOOK_IP}/github-webhook"
+http://${JENKINS_WEBHOOK_IP}/github-webhook/"

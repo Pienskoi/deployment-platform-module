@@ -23,7 +23,7 @@ controller:
       kubernetes.io/ingress.global-static-ip-name: "jenkins-webhook-static-ip"
       kubernetes.io/ingress.class: "gce"
     paths:
-    - /github-webhook
+    - /github-webhook/
 
   JCasC:
     securityRealm: |-
