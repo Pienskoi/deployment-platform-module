@@ -216,7 +216,11 @@ controller:
                     id('1')
                     repoOwner('Pienskoi')
                     repository('DevOpsProject')
-                    includes('main develop')
+                    includes('main develop PR-*')
+                    buildForkPRMerge(true)
+                    buildOriginBranch(true)
+                    buildOriginBranchWithPR(true)
+                    buildOriginPRMerge(true)                     
                   }
                 }
 
