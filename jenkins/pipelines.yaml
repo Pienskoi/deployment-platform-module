@@ -216,7 +216,7 @@ controller:
                     id('1')
                     repoOwner('Pienskoi')
                     repository('DevOpsProject')
-                    includes('main|develop')
+                    includes('main develop')
                   }
                 }
 
@@ -224,10 +224,6 @@ controller:
                   workflowBranchProjectFactory {
                     scriptPath('jenkins/build.jenkinsfile')
                   }
-                }
-
-                triggers {
-                  githubPush()
                 }
               }
 
