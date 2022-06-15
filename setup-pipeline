@@ -133,14 +133,14 @@ MTU = 1380
 [Peer]
 PublicKey = $(ssh -i ./build/os-login-ssh-key ${OS_LOGIN_USERNAME}@${WIREGUARD_IP} "sudo cat /etc/wireguard/server-public.key")
 Endpoint = ${WIREGUARD_IP}:51820
-AllowedIPs = 10.0.10.0/24, 10.10.10.0/24, 10.0.0.0/28, 10.0.0.16/28, 10.0.0.32/28
+AllowedIPs = 10.0.10.0/24, 10.10.10.0/24, 10.0.0.0/28
 PersistentKeepalive = 21
 EOF
 sudo wg-quick up ./build/wg0-client.conf
 
 cp ./build/project.com.crt ./docker-registry-chart/project.com.crt
 cp ./build/project.com.key ./docker-registry-chart/project.com.key
-docker run --entrypoint htpasswd httpd:2 -Bbn "${DOCKER_USERNAME}" "${DOCKER_PASSWORD}" > ./docker-registry-chart/htpasswd
+docker run --rm --entrypoint htpasswd httpd:2 -Bbn "${DOCKER_USERNAME}" "${DOCKER_PASSWORD}" > ./docker-registry-chart/htpasswd
 gcloud container clusters get-credentials "${CLUSTER}" --region "${REGION}"
 helm upgrade --install docker-registry ./docker-registry-chart/ \
   --set storageBucketName="${BUCKET_NAME}" \
