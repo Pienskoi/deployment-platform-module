@@ -1,5 +1,5 @@
 github:1.34.3
-generic-webhook-trigger:1.84
+github-branch-source:1637.vd833b_7ca_7654
 configuration-as-code:1414.v878271fc496f
 uno-choice:2.6.1
 job-dsl:1.78.3
