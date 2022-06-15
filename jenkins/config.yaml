@@ -33,9 +33,6 @@ controller:
         - id: ${user-credentials-admin-username}
           name: ${user-credentials-admin-username}
           password: ${user-credentials-admin-password}
-        - id: ${user-credentials-webhook-username}
-          name: ${user-credentials-webhook-username}
-          password: ${user-credentials-webhook-password}
     authorizationStrategy: |-
       globalMatrix:
         permissions:
