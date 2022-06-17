@@ -90,7 +90,7 @@ pipeline {
             job: 'deploy-pipeline',
             parameters: [
               string(name: 'ENV_NAME', value: 'CI'),
-              string(name: 'DOCKER_IMAGE', value: 'docker-registry.project.com/spring-petclinic:1')
+              string(name: 'DOCKER_IMAGE', value: 'docker-registry.project.com/spring-petclinic:latest')
             ],
             wait: false
           )
