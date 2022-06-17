@@ -1,5 +1,5 @@
 ---
-- name: Set CI Kubernetes cluster name
+- name: Set CI Helm values
   ansible.builtin.set_fact:
     helm_release_namespace: "petclinic-ci"
     values:
@@ -23,7 +23,7 @@
         - "{{ domain }}"
   when: env_name == "CI"
 
-- name: Set QA Kubernetes cluster name
+- name: Set QA Helm values
   ansible.builtin.set_fact:
     helm_release_namespace: "petclinic-qa"
     values:
