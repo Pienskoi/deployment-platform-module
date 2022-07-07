@@ -26,6 +26,14 @@ steps:
          'helm push spring-petclinic-chart-$(cat _VERSION).tgz oci://${_ARTIFACT_REGISTRY_REPO}/charts']
   env:
   - 'SKIP_CLUSTER_CONFIG=true'
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: 
+  - '-c'
+  - |-
+    if [[ "$BRANCH_NAME" == "main" && -z "${_PR_NUMBER}" ]]; then
+      gcloud beta builds triggers run deploy-ci --region global
+    fi
 
 images: [
   '${_ARTIFACT_REGISTRY_REPO}/images/spring-petclinic:$SHORT_SHA',
