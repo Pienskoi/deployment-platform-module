@@ -449,10 +449,7 @@ module "wireguard_instance_template" {
   machine_type         = "n1-standard-1"
   can_ip_forward       = true
   tags                 = ["wireguard"]
-
-  startup_script = templatefile("./wireguard-script.sh", {
-    interface_address = module.private_address.addresses[2]
-  })
+  startup_script       = file("./wireguard-script.sh")
 
   service_account = {
     email  = google_service_account.wireguard_sa.email
