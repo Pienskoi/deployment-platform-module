@@ -272,3 +272,32 @@ Added:
 - Enabling of Cloud Build, Container Registry, Artifact Registry and Secret Manager services.
 - Pushing [Helm Cloud Builder Community](https://github.com/GoogleCloudPlatform/cloud-builders-community/tree/master/helm) image to Container Registry by submitting Cloud Build.
 - Confirmation prompt that GitHub repository is connected to Cloud Build.
+
+### Results
+
+#### Cloud Build:
+Triggers:
+
+![triggers](cloud-build/screenshots/triggers.png)
+![deploy-ci-trigger](cloud-build/screenshots/deploy-ci-trigger.png)
+![deploy-qa-trigger](cloud-build/screenshots/deploy-qa-trigger.png)
+
+Build history:
+
+![build-history](cloud-build/screenshots/build-history.png)
+![deploy-history](cloud-build/screenshots/deploy-history.png)
+
+Build details:
+
+![build-push-build](cloud-build/screenshots/build-push-build.png)
+![deploy-ci-build](cloud-build/screenshots/deploy-ci-build.png)
+![deploy-qa-build](cloud-build/screenshots/deploy-qa-build.png)
+
+#### Artifact Registry:
+Images:
+
+![images](cloud-build/screenshots/artifact-registry-images.png)
+
+Charts:
+
+![charts](cloud-build/screenshots/artifact-registry-charts.png)
