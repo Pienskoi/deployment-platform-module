@@ -1,0 +1,62 @@
+steps:
+- name: 'bash'
+  args:
+  - '-c'
+  - |-
+    cat <<EOF > values.yaml
+    image: ${_IMAGE}
+    autoscaling:
+      enabled: True
+      minReplicas: 1
+      maxReplicas: 5
+      targetCPUUtilizationPercentage: 60
+      targetMemoryUtilizationPercentage: 60
+    mysql:
+      database: $$MYSQL_DATABASE
+      username: $$MYSQL_USERNAME
+      password: $$MYSQL_PASSWORD
+      cloudsqlProxy: true
+      connectionName: $$MYSQL_CONNECTION
+      serviceAccount: $$MYSQL_SA
+    loadBalancer:
+      type: external
+      addressName: spring-petclinic-static-ip
+      domains:
+      - $$DOMAIN
+    EOF
+  secretEnv: ['MYSQL_DATABASE', 'MYSQL_USERNAME', 'MYSQL_PASSWORD', 'MYSQL_CONNECTION', 'MYSQL_SA', 'DOMAIN']
+- name: 'gcr.io/$PROJECT_ID/helm'
+  args: ['upgrade',
+         '--install',
+         'spring-petclinic',
+         'oci://${_CHART}',
+         '--version',
+         '${_CHART_VERSION}',
+         '-f',
+         'values.yaml',
+         '--namespace',
+         'petclinic-ci',
+         '--create-namespace']
+  env:
+  - 'CLOUDSDK_COMPUTE_REGION=${_CLUSTER_REGION}'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=${_CLUSTER}'
+
+availableSecrets:
+  secretManager:
+  - versionName: projects/$PROJECT_NUMBER/secrets/mysql-database/versions/latest
+    env: 'MYSQL_DATABASE'
+  - versionName: projects/$PROJECT_NUMBER/secrets/mysql-username/versions/latest
+    env: 'MYSQL_USERNAME'
+  - versionName: projects/$PROJECT_NUMBER/secrets/mysql-password/versions/latest
+    env: 'MYSQL_PASSWORD'
+  - versionName: projects/$PROJECT_NUMBER/secrets/mysql-connection/versions/latest
+    env: 'MYSQL_CONNECTION'
+  - versionName: projects/$PROJECT_NUMBER/secrets/mysql-sa/versions/latest
+    env: 'MYSQL_SA'
+  - versionName: projects/$PROJECT_NUMBER/secrets/mysql-domain/versions/latest
+    env: 'DOMAIN'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  pool:
+    name: '${_PRIVATEPOOL}'
