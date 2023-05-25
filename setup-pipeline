@@ -113,7 +113,6 @@ JENKINS_WEBHOOK_IP="$(terraform output -raw jenkins_webhook_static_ip)"
 
 terraform output -raw os_login_sa_key > ../build/os-login-sa.json
 terraform output -raw docker_registry_storage_sa_key > ../docker-registry-chart/service-account.json
-terraform output -raw ansible_control_node_sa_key > ../build/ansible-sa.json
 terraform output -raw gke_deploy_sa_key > ../build/gke-sa.json
 
 cd ..
@@ -154,8 +153,6 @@ done
 echo ""
 
 echo "${DOCKER_PASSWORD}" | docker login https://docker-registry.project.com -u "${DOCKER_USERNAME}" --password-stdin
-docker build -t docker-registry.project.com/ansible:1.0.0 -f ./ansible/ansible.dockerfile ./ansible
-docker push docker-registry.project.com/ansible:1.0.0
 cp ./build/ProjectCA.crt ./jenkins/ProjectCA.crt
 docker build -t docker-registry.project.com/jenkins:1.0.0 -f ./jenkins/jenkins.dockerfile --build-arg CERT_PATH=ProjectCA.crt ./jenkins
 docker push docker-registry.project.com/jenkins:1.0.0
@@ -172,10 +169,6 @@ for NAMESPACE in "jenkins" "petclinic-ci" "petclinic-qa"; do
 done
 
 kubectl config set-context --current --namespace=jenkins
-kubectl create secret generic ansible-ssh \
-  --from-literal username="${OS_LOGIN_USERNAME}" \
-  --from-file key=./build/os-login-ssh-key
-kubectl create secret generic ansible-service-account --from-file key=./build/ansible-sa.json
 kubectl create secret generic gke-service-account --from-file key=./build/gke-sa.json
 kubectl create secret generic cluster-details \
   --from-literal location="${REGION}" \
@@ -210,13 +203,6 @@ kubectl create secret tls certs-secret \
   --key=./build/ProjectCA.key \
   --namespace kube-system
 kubectl apply -f ./certs/kubernetes.yaml
-
-export ANSIBLE_HOST_KEY_CHECKING=False
-sed -i -e "s;PROJECT_ID;${PROJECT_ID};" -e "s;ANSIBLE_SA_KEY_PATH;$(pwd)/build/os-login-sa.json;" ./ansible/inventory.gcp.yml
-ansible-playbook -i ./ansible/inventory.gcp.yml \
-  --private-key ./build/os-login-ssh-key \
-  -u "${OS_LOGIN_USERNAME}" \
-  -e cert_path="$(pwd)/build/ProjectCA.crt" ./certs/ansible.yml
 
 echo "Add nameservers to domain config:
 ${NAMESERVERS}"

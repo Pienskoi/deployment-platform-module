@@ -64,21 +64,6 @@ resource "google_compute_firewall" "project_subnet_allow_internal" {
   }
 }
 
-resource "google_compute_firewall" "pods_infr_ansible_allow_ssh" {
-  name          = "gke-pods-ansible-allow-ssh"
-  project       = var.project_id
-  network       = module.vpc.network_name
-  direction     = "INGRESS"
-  source_ranges = [module.subnets.subnets["${var.region}/project-subnet"].secondary_ip_range[0].ip_cidr_range]
-
-  allow {
-    protocol = "tcp"
-    ports    = ["22"]
-  }
-
-  target_tags = ["ansible"]
-}
-
 module "cloud_router" {
   source  = "terraform-google-modules/cloud-router/google"
   version = "~> 1.3"

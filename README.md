@@ -1,20 +1,4 @@
-### CI/CD pipeline with Git, Ansible, Docker, Kubernetes, Jenkins and Google Cloud Platform:
-
-#### [Ansible](ansible/):
-- [GCP dynamic inventory](ansible/inventory.gcp.yml)
-  - Uses gcp_compute inventory plugin
-  - Returns list of GCE instances with `ansible` label grouped by label value
-- [Build role](ansible/build-role/)
-  - Installs docker
-  - Build Docker image from copied Dockerfile
-  - Pushes built image to Docker registry
-- [Deploy role](ansible/deploy-role/)
-  - Installs gcloud, kubectl and helm
-  - Creates Helm values based on given environment
-  - Gets cluster credentials using provided service account
-  - Deploys Helm release from copied chart to cluster
-- [build.yml](ansible/build.yml) and [deploy.yml](ansible/deploy.yml) playbooks are used to run roles
-- [ansible.dockerfile](ansible/ansible.dockerfile) is used to build an image for Jenkins jobs 
+### CI/CD pipeline with Git, Docker, Kubernetes, Jenkins and Google Cloud Platform:
 
 #### [Docker registry Helm chart](docker-registry-chart/):
 Templates:
@@ -36,11 +20,8 @@ Installed by [Helm chart](https://github.com/jenkinsci/helm-charts) with the nex
   - Jenkins image built from [jenkins.dockerfile](jenkins/jenkins.dockerfile). This image installs required plugins from [plugins.txt](jenkins/plugins.txt) and trusts Docker registry certificates
   - Internal Ingress for accessing Jenkins and External ingress for GitHub webhook
   - Users and their permissions
-  - Ansible agent
 - [credentials.yaml](jenkins/credentials.yaml) creates Jenkins credentials from corresponding Kubernetes secrets
 - [pipelines.yaml](jenkins/pipelines.yaml) creates next Jobs and Pipelines using [JobDSL](https://plugins.jenkins.io/job-dsl/) plugin:
-  - `build-job` runs Ansible Build role on Ansible agent
-  - `deploy-job` runs Ansible Deploy role on Ansible agent
   - `build-pipeline` - Multibranch pipeline that runs [build.jenkinsfile](jenkins/build.jenkinsfile) on `docker` and `openjdk` containers. Triggered on Pull Requests and push to `main` or `develop` branches. If the build is successful `deploy-pipeline` will be built
   - `deploy-pipeline` runs [deploy.jenkinsfile](jenkins/deploy.jenkinsfile) on `gcloud-helm` container built from [gcloud-helm.dockerfile](jenkins/gcloud-helm.dockerfile). Uses [Active Choices plugin](https://plugins.jenkins.io/uno-choice/) with Groovy script that returns Docker image tag list instead of [Image Tag Parameter plugin](https://plugins.jenkins.io/image-tag-parameter/) that doesn't support self-signed certificates
 
@@ -62,29 +43,22 @@ I mostly used Google Cloud Foundation Toolkit [Terraform modules](https://cloud.
 - VPC
 - Subnet with secondary ranges 
 - Firewall rule for internal subnet traffic
-- Firewall rule for SSH connection from GKE cluster pods to `ansible` nodes
 - Cloud router and NAT
 - Private GKE cluster with 2 node pools
 - Service account with Cloud SQL Client role and Workload Identity User binding with Kubernetes Service Account `sql-proxy-sa` in `petclinic-ci` namespace
 - Service accounts:
-  - `ansible-control-node` - used by Ansible to create inventory
   - `docker-registry-storage` - used by Docker registry to access GCS bucket
   - `gke-deploy` - used to deploy Helm charts to GKE clusters
   - `os-login` - used to connect to instances by SSH
-- `ansible-managed-node` service account used by Ansible managed node GCE instances
-- Grant `os-login` service account `iam.serviceAccountUser` role on `ansible-managed-node` service account
 - `wireguard` service account used by Wireguard server GCE instance
 - Grant `os-login` service account `iam.serviceAccountUser` role on `wireguard` service account
-- Grant `ansible-control-node` service account `compute.viewer` role
 - Grant `os-login` service account `compute.osAdminLogin` role
 - Grant `gke-deploy` service account `container.developer` role
 - GCS Bucket with random name suffix
 - Grant `docker-registry-storage` `storage.objectAdmin` role on GCS bucket
 - Private Service Access for connecting to Cloud SQL by Private IP
 - MySQL Cloud SQL instance, user and database
-- Instance Template for running Ansible Build role
 - Compute instance from Build Instance Template
-- Instance Template for running Ansible Deploy role
 - Compute instance from Deploy Instance Template
 - DNS private zone
 - Private addresses and corresponging DNS records of Docker registry, Jenkins and QA endpoints
@@ -98,7 +72,6 @@ I mostly used Google Cloud Foundation Toolkit [Terraform modules](https://cloud.
 
 #### [Certificates](certs/):
 Install and trust TLS certificates using:
-- [Ansible playbook](certs/ansible.yml) on all Ansible managed nodes
 - [Kubernetes DaemonSet](certs/kubernetes.yaml) on Kubernetes cluster
 
 I used Wireguard VPN server to access my VPC. I chose Wireguard because I need client-to-site connection and it's relatively easy to setup compared to OpenVPN and other VPN protocols.
@@ -111,7 +84,7 @@ Spring-petclinic image is built from [spring-petclinic.dockerfile](spring-petcli
 ```
 git clone https://github.com/Pienskoi/DevOpsProject.git
 ```
-- `gcloud`, `docker`, `kubectl`, `helm`, `ansible` and `wireguard` should be installed. You must be logged in to `gcloud` with the required permissions. 
+- `gcloud`, `docker`, `kubectl`, `helm` and `wireguard` should be installed. You must be logged in to `gcloud` with the required permissions. 
 - Run [setup-pipeline](setup-pipeline) script from repo folder:
 ```
 cd DevOpsProject

@@ -1,5 +1,0 @@
----
-- hosts: build
-  become: yes
-  roles:
-    - role: build-role

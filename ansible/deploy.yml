@@ -1,5 +1,0 @@
----
-- hosts: deploy
-  become: yes
-  roles:
-    - role: deploy-role

@@ -1,6 +1,0 @@
----
-- name: Install Docker
-  import_tasks: install-docker.yml
-
-- name: Build and Push Docker image
-  import_tasks: build-image.yml

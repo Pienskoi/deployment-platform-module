@@ -42,12 +42,3 @@ controller:
 agent:
   nodeSelector:
     cloud.google.com/gke-nodepool: default-node-pool
-
-additionalAgents:
-  ansible:
-    podName: ansible
-    customJenkinsLabels: ansible
-    sideContainerName: jnlp
-    image: docker-registry.project.com/ansible
-    tag: 1.0.0
-    imagePullSecretName: registry-secret

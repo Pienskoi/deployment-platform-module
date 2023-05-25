@@ -1,8 +1,0 @@
----
-dockerfile: spring-petclinic.dockerfile
-work_dir: /work_dir
-registry_url: docker-registry.project.com
-image_name: spring-petclinic
-image_tag: latest
-registry_username: username
-registry_password: password

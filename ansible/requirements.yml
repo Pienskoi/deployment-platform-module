@@ -1,5 +1,0 @@
----
-collections:
-- google.cloud
-- community.docker
-- kubernetes.core
