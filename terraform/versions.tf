@@ -14,7 +14,7 @@ terraform {
 
     random = {
       source  = "hashicorp/random"
-      version = "3.5.1"
+      version = "3.1.0"
     }
 
     tls = {
