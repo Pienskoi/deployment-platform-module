@@ -1,9 +1,0 @@
-htpasswdFilePath: htpasswd
-serviceAccountKeyPath: service-account.json
-storageBucketName: docker-registry-bucket
-staticAddressName: docker-registry-static-ip
-domain: docker-registry.project.com
-certFilePath: project.com.crt
-certKeyPath: project.com.key
-nodeSelector:
-  cloud.google.com/gke-nodepool: default-node-pool

@@ -33,7 +33,6 @@ resource "tls_cert_request" "project_cert_request" {
   }
 
   dns_names = [
-    "docker-registry.${var.internal_domain}",
     "jenkins.${var.internal_domain}",
     "qa.${var.internal_domain}"
   ]

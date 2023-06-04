@@ -1,14 +1,5 @@
-output "docker_registry_storage_sa_key" {
-  value     = module.service_accounts.keys["docker-registry-storage"]
-  sensitive = true
-}
-
-output "docker_registry_storage_bucket" {
-  value = module.bucket.bucket.name
-}
-
 output "gke_deploy_sa_key" {
-  value     = module.service_accounts.keys["gke-deploy"]
+  value     = module.service_accounts.keys["jenkins"]
   sensitive = true
 }
 

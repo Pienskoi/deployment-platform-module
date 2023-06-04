@@ -23,13 +23,11 @@ module "private_address" {
   dns_project      = var.project_id
 
   names = [
-    "docker-registry-static-ip",
     "jenkins-static-ip",
     "internal-spring-petclinic-ip"
   ]
 
   dns_short_names = [
-    "docker-registry",
     "jenkins",
     "qa"
   ]

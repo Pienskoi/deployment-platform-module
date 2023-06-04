@@ -6,23 +6,18 @@ module "service_accounts" {
   generate_keys = true
 
   names = [
-    "docker-registry-storage",
-    "gke-deploy"
+    "jenkins",
+    "wireguard"
   ]
 
   descriptions = [
-    "Service account used by Docker registry to access GCS",
-    "Service account used to deploy application to GKE clusters"
+    "Service account used by Jenkins agents",
+    "Service account used by WireGuard server"
   ]
 }
 
-resource "google_service_account" "wireguard_sa" {
-  account_id  = "wireguard"
-  description = "Service account used by WireGuard server"
-}
-
-resource "google_project_iam_member" "gke_deploy_sa_iam" {
+resource "google_project_iam_member" "jenkins_gke_iam_member" {
   project = var.project_id
   role    = "roles/container.developer"
-  member  = "serviceAccount:${module.service_accounts.service_accounts_map["gke-deploy"].email}"
+  member  = "serviceAccount:${module.service_accounts.service_accounts_map["jenkins"].email}"
 }
