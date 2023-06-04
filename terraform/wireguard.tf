@@ -69,26 +69,3 @@ resource "google_compute_firewall" "wireguard_allow" {
 
   target_tags = ["wireguard"]
 }
-
-data "google_compute_addresses" "dns_server_address" {
-  project = var.project_id
-  filter  = "purpose:DNS_RESOLVER AND subnetwork:project-subnet"
-
-  depends_on = [module.dns_private_zone.name]
-}
-
-resource "local_file" "wg_client_config" {
-  content = templatefile("${path.module}/templates/wg_client_config.tftpl",
-    {
-      client_private_key = wireguard_asymmetric_key.wg_client_key.private_key
-      server_public_key  = wireguard_asymmetric_key.wg_server_key.public_key
-      dns_server_address = data.google_compute_addresses.dns_server_address[0].address
-      wireguard_ip       = module.regional_public_address.addresses[0]
-    }
-  )
-  filename = "${path.module}/wg0-client.conf"
-
-  provisioner "local-exec" {
-    command = "wg-quick up ${path.module}/wg0-client.conf"
-  }
-}
