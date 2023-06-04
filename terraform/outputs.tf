@@ -12,15 +12,6 @@ output "gke_deploy_sa_key" {
   sensitive = true
 }
 
-output "os_login_sa_key" {
-  value     = module.service_accounts.keys["os-login"]
-  sensitive = true
-}
-
-output "os_login_ssh_username" {
-  value = "sa_${module.service_accounts.service_accounts_map["os-login"].unique_id}"
-}
-
 output "sql_connection_name" {
   value     = module.safer_mysql_db.instance_connection_name
   sensitive = true

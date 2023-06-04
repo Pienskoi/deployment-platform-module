@@ -7,6 +7,12 @@ resource "google_dns_policy" "project_dns_policy" {
   }
 }
 
+resource "wireguard_asymmetric_key" "wg_server_key" {
+}
+
+resource "wireguard_asymmetric_key" "wg_client_key" {
+}
+
 module "wireguard_instance_template" {
   source  = "terraform-google-modules/vm/google//modules/instance_template"
   version = "~> 7.7"
@@ -19,15 +25,17 @@ module "wireguard_instance_template" {
   machine_type         = "n1-standard-1"
   can_ip_forward       = true
   tags                 = ["wireguard"]
-  startup_script       = file("./wireguard-script.sh")
+
+  startup_script = templatefile("${path.module}/templates/wg_server_script.tftpl",
+    {
+      server_private_key = wireguard_asymmetric_key.wg_server_key.private_key
+      client_public_key  = wireguard_asymmetric_key.wg_client_key.public_key
+    }
+  )
 
   service_account = {
     email  = google_service_account.wireguard_sa.email
     scopes = ["cloud-platform"]
-  }
-
-  metadata = {
-    "enable-oslogin" = "true"
   }
 }
 
@@ -55,14 +63,32 @@ resource "google_compute_firewall" "wireguard_allow" {
   source_ranges = ["0.0.0.0/0"]
 
   allow {
-    protocol = "tcp"
-    ports    = ["22"]
-  }
-
-  allow {
     protocol = "udp"
     ports    = ["51820"]
   }
 
   target_tags = ["wireguard"]
+}
+
+data "google_compute_addresses" "dns_server_address" {
+  project = var.project_id
+  filter  = "purpose:DNS_RESOLVER AND subnetwork:project-subnet"
+
+  depends_on = [module.dns_private_zone.name]
+}
+
+resource "local_file" "wg_client_config" {
+  content = templatefile("${path.module}/templates/wg_client_config.tftpl",
+    {
+      client_private_key = wireguard_asymmetric_key.wg_client_key.private_key
+      server_public_key  = wireguard_asymmetric_key.wg_server_key.public_key
+      dns_server_address = data.google_compute_addresses.dns_server_address[0].address
+      wireguard_ip       = module.regional_public_address.addresses[0]
+    }
+  )
+  filename = "${path.module}/wg0-client.conf"
+
+  provisioner "local-exec" {
+    command = "wg-quick up ${path.module}/wg0-client.conf"
+  }
 }
