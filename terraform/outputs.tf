@@ -42,3 +42,8 @@ output "jenkins_webhook_static_ip" {
 output "wireguard_server_public_ip" {
   value = module.regional_public_address.addresses[0]
 }
+
+output "ca_certificate" {
+  description = "Certificate representing a Certificate Authority (CA)"
+  value       = tls_self_signed_cert.ca_cert.cert_pem
+}

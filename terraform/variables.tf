@@ -31,3 +31,9 @@ variable "sql_user_password" {
 variable "domain" {
   type = string
 }
+
+variable "internal_domain" {
+  description = "Domain name used for internal services, e.g. Jenkins"
+  type        = string
+  default     = "project.com"
+}
