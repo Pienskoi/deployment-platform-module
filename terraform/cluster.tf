@@ -38,18 +38,3 @@ module "gke_cluster" {
     }
   ]
 }
-
-module "workload_identity" {
-  source  = "terraform-google-modules/kubernetes-engine/google//modules/workload-identity"
-  version = "~> 20.0"
-
-  project_id          = var.project_id
-  name                = "mysql-workload-identity"
-  namespace           = "petclinic-ci"
-  use_existing_k8s_sa = true
-  k8s_sa_name         = "sql-proxy-sa"
-  annotate_k8s_sa     = false
-  roles               = ["roles/cloudsql.client"]
-
-  depends_on = [module.gke_cluster.name]
-}

@@ -1,15 +1,5 @@
-output "gke_deploy_sa_key" {
-  value     = module.service_accounts.keys["jenkins"]
-  sensitive = true
-}
-
 output "sql_connection_name" {
   value     = module.safer_mysql_db.instance_connection_name
-  sensitive = true
-}
-
-output "sql_service_account" {
-  value     = module.workload_identity.gcp_service_account_email
   sensitive = true
 }
 

@@ -13,6 +13,12 @@ resource "wireguard_asymmetric_key" "wg_server_key" {
 resource "wireguard_asymmetric_key" "wg_client_key" {
 }
 
+resource "google_service_account" "wireguard_service_account" {
+  account_id   = "wireguard"
+  display_name = "Wireguard Service Account"
+  description = "Wireguard Service Account"
+}
+
 module "wireguard_instance_template" {
   source  = "terraform-google-modules/vm/google//modules/instance_template"
   version = "~> 7.7"
@@ -20,7 +26,7 @@ module "wireguard_instance_template" {
   project_id           = var.project_id
   region               = var.region
   subnetwork           = module.subnets.subnets["${var.region}/project-subnet"].name
-  source_image_family  = "debian-10"
+  source_image_family  = "debian-11"
   source_image_project = "debian-cloud"
   machine_type         = "n1-standard-1"
   can_ip_forward       = true
@@ -34,7 +40,7 @@ module "wireguard_instance_template" {
   )
 
   service_account = {
-    email  = google_service_account.wireguard_sa.email
+    email  = google_service_account.wireguard_service_account.email
     scopes = ["cloud-platform"]
   }
 }
