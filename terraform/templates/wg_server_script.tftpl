@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo 'deb https://ftp.debian.org/debian buster-backports main' >> /etc/apt/sources.list.d/buster-backports.list
-apt update && apt install wireguard linux-headers-$(uname -r) -y
+apt-get update && apt-get install wireguard linux-headers-$(uname -r) -y
 
 cat <<EOF > /etc/wireguard/wg0.conf
 [Interface]
