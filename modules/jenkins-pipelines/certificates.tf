@@ -29,12 +29,12 @@ resource "tls_cert_request" "project_cert_request" {
   private_key_pem = tls_private_key.project_private_key.private_key_pem
 
   subject {
-    common_name = var.internal_domain
+    common_name = "project.com"
   }
 
   dns_names = [
-    "jenkins.${var.internal_domain}",
-    "qa.${var.internal_domain}"
+    "jenkins.project.com",
+    "dev.project.com"
   ]
 }
 
