@@ -4,7 +4,7 @@ module "dns_private_zone" {
 
   project_id = var.project_id
   type       = "private"
-  name       = "project-com"
+  name       = "private-zone"
   domain     = "project.com."
 
   private_visibility_config_networks = [module.vpc.network_self_link]
@@ -24,23 +24,13 @@ module "private_address" {
 
   names = [
     "jenkins-static-ip",
-    "internal-spring-petclinic-ip"
+    "app-private-ip"
   ]
 
   dns_short_names = [
     "jenkins",
-    "qa"
+    "dev"
   ]
-}
-
-module "regional_public_address" {
-  source  = "terraform-google-modules/address/google"
-  version = "~> 3.1"
-
-  project_id   = var.project_id
-  region       = var.region
-  address_type = "EXTERNAL"
-  names        = ["wireguard-static-ip"]
 }
 
 module "global_public_address" {
@@ -53,18 +43,20 @@ module "global_public_address" {
   global       = true
 
   names = [
-    "spring-petclinic-static-ip",
+    "app-public-ip",
     "jenkins-webhook-static-ip"
   ]
 }
 
 module "dns_public_zone" {
+  count = var.domain == "" ? 0 : 1
+
   source  = "terraform-google-modules/cloud-dns/google"
   version = "~> 4.1"
 
   project_id = var.project_id
   type       = "public"
-  name       = "spring-petclinic-tk"
+  name       = "public-zone"
   domain     = "${var.domain}."
 
   private_visibility_config_networks = [module.vpc.network_self_link]

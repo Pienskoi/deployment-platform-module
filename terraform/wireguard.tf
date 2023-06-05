@@ -7,6 +7,16 @@ resource "google_dns_policy" "project_dns_policy" {
   }
 }
 
+module "regional_public_address" {
+  source  = "terraform-google-modules/address/google"
+  version = "~> 3.1"
+
+  project_id   = var.project_id
+  region       = var.region
+  address_type = "EXTERNAL"
+  names        = ["wireguard-static-ip"]
+}
+
 resource "wireguard_asymmetric_key" "wg_server_key" {
 }
 
