@@ -12,28 +12,5 @@ variable "zone" {
 
 variable "gke_cluster_name" {
   type = string
-}
-
-variable "sql_database_name" {
-  type = string
-}
-
-variable "sql_user_name" {
-  type      = string
-  sensitive = true
-}
-
-variable "sql_user_password" {
-  type      = string
-  sensitive = true
-}
-
-variable "domain" {
-  type = string
-}
-
-variable "internal_domain" {
-  description = "Domain name used for internal services, e.g. Jenkins"
-  type        = string
-  default     = "project.com"
+  default = "project-cluster"
 }

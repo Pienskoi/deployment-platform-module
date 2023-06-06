@@ -19,18 +19,9 @@ module "safer_mysql_db" {
   region               = var.region
   zone                 = var.zone
   tier                 = "db-n1-standard-1"
-  user_name            = var.sql_user_name
-  user_password        = var.sql_user_password
-
   vpc_network        = module.vpc.network_self_link
   allocated_ip_range = module.private_service_access.google_compute_global_address_name
   assign_public_ip   = false
-
-  additional_databases = [{
-    name      = var.sql_database_name
-    charset   = ""
-    collation = ""
-  }]
 
   deletion_protection = false
 
