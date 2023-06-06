@@ -1,0 +1,28 @@
+controller:
+  JCasC:
+    configScripts:
+      jobs: |
+        jobs:
+          %{~ for service in services ~}
+          - script: >
+              multibranchPipelineJob('${service.name}-pipeline') {
+                branchSources {
+                  github {
+                    id('1')
+                    repoOwner('${service.owner}')
+                    repository('${service.repository}')
+                    includes('main develop PR-*')
+                    buildForkPRMerge(true)
+                    buildOriginBranch(true)
+                    buildOriginBranchWithPR(true)
+                    buildOriginPRMerge(true)
+                  }
+                }
+
+                factory {
+                  pipelineBranchDefaultsProjectFactory {
+                    scriptId '${service.name}-jenkinsfile'
+                  }
+                }
+              }
+          %{~ endfor ~}

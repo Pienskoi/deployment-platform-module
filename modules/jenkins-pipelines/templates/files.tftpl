@@ -1,0 +1,31 @@
+controller:
+  JCasC:
+    configScripts:
+      unclassified:
+        globalConfigFiles:
+          configs:
+            %{~ for service in service_files ~}
+            - custom:
+                id: ${service.name}-jenkinsfile
+                name: Jenkinsfile
+                comment: Jenkinsfile for ${service.name} service
+                content: |
+                  ${indent(18, service.jenkinsfile)}
+            - custom:
+                id: ${service.name}-prod-values
+                name: values.yaml
+                comment: Production environment values for ${service.name}
+                content: |
+                  ${indent(18, service.prod_values)}
+            - custom:
+                id: ${service.name}-dev-values
+                name: values.yaml
+                comment: Development environment values for ${service.name}
+                content: |
+                  ${indent(18, service.dev_values)}
+            %{~ endfor ~}
+            - custom:
+                id: java-11-maven-dockerfile
+                name: Dockerfile
+                comment: Dockerfile for Java 11 with Maven
+                content: dummy content 1

@@ -1,0 +1,15 @@
+image: "${image}"
+serviceAccountName: "${service_account_name}"
+port: ${port}
+args: [%{ for arg in args }"${arg}", %{~ endfor ~}
+autoscaling:
+  enabled: ${autoscaling}
+%{ if ${autoscaling} }replicas: ${replicas}%{ endif }
+mysql:
+  enabled: ${mysql_enabled}
+  %{~ if ${mysql_enabled} ~}
+  database: "${mysql_database}"
+  username: "${mysql_user}"
+  passwordSecretName: "${mysql_secret}"
+  connectionName: "${mysql_connection_name}"
+  %{~ endif ~}
