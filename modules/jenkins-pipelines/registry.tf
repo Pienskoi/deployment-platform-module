@@ -12,5 +12,5 @@ resource "google_artifact_registry_repository_iam_member" "jenkins_registry_iam_
   location   = var.region
   repository = google_artifact_registry_repository.project_repo.name
   role       = "roles/artifactregistry.writer"
-  member     = "serviceAccount:${module.service_accounts.service_accounts_map["jenkins"].email}"
+  member     = "serviceAccount:${module.jenkins_workload_identity.gcp_service_account_email}"
 }
