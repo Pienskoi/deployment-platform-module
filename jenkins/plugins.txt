@@ -8,3 +8,5 @@ kubernetes:3580.v78271e5631dc
 workflow-aggregator:2.7
 pipeline-stage-view:2.24
 git:4.11.3
+config-file-provider:938.ve2b_8a_591c596
+pipeline-multibranch-defaults:2.1
