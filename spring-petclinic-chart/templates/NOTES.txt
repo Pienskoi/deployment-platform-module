@@ -1,8 +1,0 @@
-{{- if eq .Values.loadBalancer.type "external" }}
-Spring-petclinic application is accessible on URL:
-{{- range $host := .Values.loadBalancer.domains }}
-https://{{ $host }}
-{{- end }}
-{{- else if eq .Values.loadBalancer.type "internal" }}
-Spring-petclinic application is accessible on Internal Load Balancer IP.
-{{- end }}

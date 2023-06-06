@@ -6,13 +6,13 @@ metadata:
   annotations:
     cloud.google.com/neg: '{"ingress": true}'
   labels:
-    {{- include "spring-petclinic.labels" . | nindent 4 }}
+    {{- include "service.labels" . | nindent 4 }}
 spec:
   type: NodePort
   selector:
-    {{- include "spring-petclinic.selectorLabels" . | nindent 4 }}
+    {{- include "service.selectorLabels" . | nindent 4 }}
   ports:
     - name: http-port
       protocol: TCP
-      port: 8080
-      targetPort: 8080
+      port: {{ .Values.port }}
+      targetPort: {{ .Values.port }}
