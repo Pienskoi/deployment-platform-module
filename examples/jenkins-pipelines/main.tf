@@ -31,3 +31,16 @@ provider "helm" {
     }
   }
 }
+
+module "deployment_platform" {
+  source = "../../modules/jenkins-pipelines"
+
+  project_id        = var.project_id
+  region            = var.region
+  zone              = var.zone
+  services = var.services
+  cluster_name = var.cluster_name
+  subnet_name = var.subnet_name
+  jenkins_admin_username = var.jenkins_admin_username
+  jenkins_admin_password = var.jenkins_admin_password
+}
