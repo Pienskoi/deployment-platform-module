@@ -1,15 +1,22 @@
 image: "${image}"
 serviceAccountName: "${service_account_name}"
 port: ${port}
-args: [%{ for arg in args }"${arg}", %{~ endfor ~}
+args: [%{ for arg in args }"${arg}", %{ endfor }]
+path: ${path}
 autoscaling:
   enabled: ${autoscaling}
-%{ if ${autoscaling} }replicas: ${replicas}%{ endif }
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 60
+  targetMemoryUtilizationPercentage: 60
+%{~ if autoscaling }
+replicas: ${replicas}
+%{~ endif }
 mysql:
   enabled: ${mysql_enabled}
-  %{~ if ${mysql_enabled} ~}
+  %{ if mysql_enabled }
   database: "${mysql_database}"
   username: "${mysql_user}"
   passwordSecretName: "${mysql_secret}"
   connectionName: "${mysql_connection_name}"
-  %{~ endif ~}
+  %{~ endif }
