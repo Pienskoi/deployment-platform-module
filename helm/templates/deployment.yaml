@@ -45,12 +45,12 @@ spec:
         args: {{ .Values.args }}
         livenessProbe:
           httpGet:
-            path: /
+            path: "{{ .Values.path }}/"
             port: http-port
           initialDelaySeconds: 100
         readinessProbe:
           httpGet:
-            path: /
+            path: "{{ .Values.path }}/"
             port: http-port
         resources:
           requests:

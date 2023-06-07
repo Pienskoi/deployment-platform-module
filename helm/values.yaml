@@ -3,6 +3,7 @@ tag: "latest"
 serviceAccountName: ""
 port: 80
 args: []
+path: ""
 autoscaling:
   enabled: false
 # minReplicas: 1
