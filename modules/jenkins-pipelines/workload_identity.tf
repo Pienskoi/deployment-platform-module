@@ -2,8 +2,8 @@ module "jenkins_workload_identity" {
   source  = "terraform-google-modules/kubernetes-engine/google//modules/workload-identity"
   version = "~> 25.0"
 
-  name       = jenkins
-  namespace  = kubernetes_namespace.namespaces["jenkins"].name
+  name       = "jenkins-agent"
+  namespace  = kubernetes_namespace.namespaces["jenkins"].metadata[0].name
   project_id = var.project_id
 
   roles = ["roles/container.developer"]
@@ -16,8 +16,7 @@ module "prod_service_workload_identity" {
   for_each = toset(local.service_names)
 
   name        = each.value
-  gcp_sa_name = var.jenkins_sa_name
-  namespace   = kubernetes_namespace.namespaces["production"].name
+  namespace   = kubernetes_namespace.namespaces["production"].metadata[0].name
   project_id  = var.project_id
 
   roles = ["roles/cloudsql.client"]
@@ -30,7 +29,8 @@ module "dev_service_workload_identity" {
   for_each = toset(local.service_names)
 
   name       = each.value
-  namespace  = kubernetes_namespace.namespaces["development"].name
+  gcp_sa_name = "dev-${each.value}"
+  namespace  = kubernetes_namespace.namespaces["development"].metadata[0].name
   project_id = var.project_id
 
   roles = ["roles/cloudsql.client"]
