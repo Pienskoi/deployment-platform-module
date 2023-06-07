@@ -1,3 +1,9 @@
+data "google_compute_subnetwork" "subnet" {
+  name   = var.subnet_name
+  project = var.project_id
+  region = var.region
+}
+
 module "dns_private_zone" {
   source  = "terraform-google-modules/cloud-dns/google"
   version = "~> 4.1"
@@ -7,7 +13,7 @@ module "dns_private_zone" {
   name       = "private-zone"
   domain     = "project.com."
 
-  private_visibility_config_networks = [module.vpc.network_self_link]
+  private_visibility_config_networks = [data.google_compute_network.network.self_link]
 }
 
 module "private_address" {
@@ -16,7 +22,7 @@ module "private_address" {
 
   project_id       = var.project_id
   region           = var.region
-  subnetwork       = module.subnets.subnets["${var.region}/project-subnet"].name
+  subnetwork       = var.subnet_name
   enable_cloud_dns = true
   dns_domain       = "project.com"
   dns_managed_zone = module.dns_private_zone.name
@@ -59,7 +65,7 @@ module "dns_public_zone" {
   name       = "public-zone"
   domain     = "${var.domain}."
 
-  private_visibility_config_networks = [module.vpc.network_self_link]
+  private_visibility_config_networks = [data.google_compute_network.network.self_link]
 
   recordsets = [{
     name    = ""
