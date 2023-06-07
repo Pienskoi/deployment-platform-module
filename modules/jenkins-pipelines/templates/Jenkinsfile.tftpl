@@ -1,14 +1,14 @@
 pipeline {
   agent {
     kubernetes {
-      defaultContainer 'gcloud'
+      defaultContainer 'agent'
       yaml '''
         apiVersion: v1
         kind: Pod
         spec:
           containers:
-          - name: docker
-            image: docker:20
+          - name: agent
+            image: ghcr.io/pienskoi/jenkins-agent:1.0.0
             command:
             - sleep
             args:
@@ -17,17 +17,11 @@ pipeline {
             volumeMounts:
             - name: dockersock
               mountPath: /var/run/docker.sock
-          - name: gcloud
-            image: google/cloud-sdk:385.0.0
-            command:
-            - sleep
-            args:
-            - 99d
           volumes:
           - name: dockersock
             hostPath:
               path: /var/run/docker.sock
-          serviceAccountName: jenkins
+          serviceAccountName: jenkins-agent
       '''
     }
   }
@@ -40,7 +34,7 @@ pipeline {
     REGISTRY_HOST='${registry_host}'
     IMAGE='${registry_host}/${project_id}/${repository}/${service_name}'
     CLUSTER_NAME='${cluster_name}'
-    CLUSTER_ZONE='${cluster_zone}'
+    CLUSTER_LOCATION='${cluster_location}'
     PROJECT_ID='${project_id}'
     PROD_NAMESPACE='${prod_namespace}'
     DEV_NAMESPACE='${dev_namespace}'
@@ -51,33 +45,36 @@ pipeline {
   stages {
     stage('Authenticate to Artifact Registry') {
       steps {
-        container('gcloud') {
-          sh 'gcloud auth configure-docker $REGISTRY_HOST --quiet'
-        }     
+        sh 'gcloud auth configure-docker $REGISTRY_HOST --quiet'
       }
     }
 
     stage('Build image') {
       steps {
-        container('docker') {
-          configFileProvider([configFile(fileId: '${service_type}-dockerfile', variable: 'DOCKERFILE')]) {
-            sh 'docker build -t $IMAGE:$BUILD_NUMBER -t $IMAGE:latest -f $DOCKERFILE .'
-          }
+        configFileProvider([configFile(fileId: '${service_type}-dockerfile', variable: 'DOCKERFILE')]) {
+          sh 'docker build -t $IMAGE:$BUILD_NUMBER -t $IMAGE:latest -f $DOCKERFILE .'
         }
+      }
+    }
+
+    stage('Tag image') {
+      when {
+        expression { BRANCH_NAME == 'main' }
+      }
+      steps {
+        sh 'docker tag $IMAGE:$BUILD_NUMBER $IMAGE:latest'
       }
     }
 
     stage('Push image') {
       steps {
-        container('docker') {
-          sh 'docker push $IMAGE'
-        }
+        sh 'docker push $IMAGE --all-tags'
       }
     }
 
     stage('Get cluster credentials') {
       steps {
-        sh 'gcloud container clusters get-credentials $CLUSTER_NAME --zone $CLUSTER_ZONE --project $PROJECT_ID'
+        sh 'gcloud container clusters get-credentials $CLUSTER_NAME --location $CLUSTER_LOCATION --project $PROJECT_ID'
       }
     }
 
@@ -87,7 +84,6 @@ pipeline {
       }
       steps {
         configFileProvider([configFile(fileId: '${service_name}-prod-values', variable: 'VALUES_FILE')]) {
-          sh 'curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | VERIFY_CHECKSUM=false bash'
           sh 'helm upgrade --install $SERVICE_NAME $CHART_PATH -f $VALUES_FILE --namespace $PROD_NAMESPACE'
         }
       }
@@ -99,7 +95,6 @@ pipeline {
       }
       steps {
         configFileProvider([configFile(fileId: '${service_name}-dev-values', variable: 'VALUES_FILE')]) {
-          sh 'curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | VERIFY_CHECKSUM=false bash'
           sh 'helm upgrade --install $SERVICE_NAME $CHART_PATH -f $VALUES_FILE --namespace $DEV_NAMESPACE'
         }
       }
