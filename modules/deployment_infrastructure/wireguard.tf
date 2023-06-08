@@ -26,7 +26,7 @@ resource "wireguard_asymmetric_key" "wg_client_key" {
 resource "google_service_account" "wireguard_service_account" {
   account_id   = "wireguard"
   display_name = "Wireguard Service Account"
-  description = "Wireguard Service Account"
+  description  = "Wireguard Service Account"
 }
 
 module "wireguard_instance_template" {

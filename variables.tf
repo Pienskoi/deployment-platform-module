@@ -26,7 +26,7 @@ variable "services" {
 }
 
 variable "vpc_name" {
-  type = string
+  type    = string
   default = "project-vpc"
 }
 

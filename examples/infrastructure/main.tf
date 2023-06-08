@@ -11,11 +11,12 @@ provider "google-beta" {
 }
 
 module "deployment_infrastructure" {
-  source = "../../terraform"
+  source  = "Pienskoi/deployment-platform/google//modules/deployment_infrastructure"
+  version = "1.0.1"
 
-  project_id        = var.project_id
-  region            = var.region
-  zone              = var.zone
+  project_id = var.project_id
+  region     = var.region
+  zone       = var.zone
 
   depends_on = [module.project_services]
 }

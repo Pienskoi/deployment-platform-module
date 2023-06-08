@@ -1,9 +1,3 @@
-data "google_compute_subnetwork" "subnet" {
-  name   = var.subnet_name
-  project = var.project_id
-  region = var.region
-}
-
 module "dns_private_zone" {
   source  = "terraform-google-modules/cloud-dns/google"
   version = "~> 4.1"

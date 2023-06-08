@@ -15,11 +15,11 @@ output "wireguard_server_public_key" {
 }
 
 output "cluster_endpoint" {
-  value = module.gke_cluster.endpoint
+  value     = module.gke_cluster.endpoint
   sensitive = true
 }
 
 output "cluster_ca_certificate" {
-  value = module.gke_cluster.ca_certificate
+  value     = module.gke_cluster.ca_certificate
   sensitive = true
 }

@@ -11,6 +11,6 @@ variable "zone" {
 }
 
 variable "gke_cluster_name" {
-  type = string
+  type    = string
   default = "project-cluster"
 }

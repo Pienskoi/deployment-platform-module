@@ -1,6 +1,6 @@
 locals {
   environments = ["production", "development"]
-  domain = var.domain == "" ? "${replace(module.global_public_address.addresses[0], ".", "-")}.nip.io" : var.domain
+  domain       = var.domain == "" ? "${replace(module.global_public_address.addresses[0], ".", "-")}.nip.io" : var.domain
 }
 
 resource "kubernetes_namespace" "namespaces" {
@@ -39,7 +39,7 @@ resource "kubernetes_ingress_v1" "app_external_ingress" {
             }
 
             path_type = "Prefix"
-            path = "/${coalesce(path.value.path, path.value.name)}"
+            path      = "/${coalesce(path.value.path, path.value.name)}"
           }
         }
       }
@@ -76,7 +76,7 @@ resource "kubernetes_ingress_v1" "app_internal_ingress" {
             }
 
             path_type = "Prefix"
-            path = "/${coalesce(path.value.path, path.value.name)}/*"
+            path      = "/${coalesce(path.value.path, path.value.name)}/*"
           }
         }
       }

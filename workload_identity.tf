@@ -15,9 +15,9 @@ module "prod_service_workload_identity" {
 
   for_each = toset(local.service_names)
 
-  name        = each.value
-  namespace   = kubernetes_namespace.namespaces["production"].metadata[0].name
-  project_id  = var.project_id
+  name       = each.value
+  namespace  = kubernetes_namespace.namespaces["production"].metadata[0].name
+  project_id = var.project_id
 
   roles = ["roles/cloudsql.client"]
 }
@@ -28,10 +28,10 @@ module "dev_service_workload_identity" {
 
   for_each = toset(local.service_names)
 
-  name       = each.value
+  name        = each.value
   gcp_sa_name = "dev-${each.value}"
-  namespace  = kubernetes_namespace.namespaces["development"].metadata[0].name
-  project_id = var.project_id
+  namespace   = kubernetes_namespace.namespaces["development"].metadata[0].name
+  project_id  = var.project_id
 
   roles = ["roles/cloudsql.client"]
 }

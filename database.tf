@@ -1,5 +1,5 @@
 data "google_compute_network" "network" {
-  name = var.vpc_name
+  name    = var.vpc_name
   project = var.project_id
 }
 
@@ -23,12 +23,12 @@ module "safer_mysql_db" {
   region               = var.region
   zone                 = var.zone
   tier                 = "db-n1-standard-1"
-  vpc_network         = data.google_compute_network.network.self_link
-  allocated_ip_range  = module.private_service_access.google_compute_global_address_name
-  assign_public_ip    = false
+  vpc_network          = data.google_compute_network.network.self_link
+  allocated_ip_range   = module.private_service_access.google_compute_global_address_name
+  assign_public_ip     = false
 
   additional_databases = concat(
-    [for database_name in local.database_names : 
+    [for database_name in local.database_names :
       {
         name      = database_name
         charset   = ""
@@ -37,8 +37,8 @@ module "safer_mysql_db" {
     ],
     [for database_name in local.database_names :
       {
-        name = "${database_name}-dev"
-        charset = ""
+        name      = "${database_name}-dev"
+        charset   = ""
         collation = ""
       }
     ]
