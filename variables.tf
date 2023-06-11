@@ -41,7 +41,8 @@ variable "domain" {
 }
 
 variable "cluster_name" {
-  type = string
+  type    = string
+  default = "project-cluster"
 }
 
 variable "jenkins_admin_username" {
