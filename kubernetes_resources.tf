@@ -33,7 +33,7 @@ resource "kubernetes_ingress_v1" "app_external_ingress" {
               service {
                 name = "${path.value.name}-service"
                 port {
-                  number = 8080
+                  number = path.value.port
                 }
               }
             }
