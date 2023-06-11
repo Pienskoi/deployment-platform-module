@@ -34,7 +34,7 @@ provider "helm" {
 
 module "deployment_platform" {
   source  = "Pienskoi/deployment-platform/google"
-  version = "1.0.2"
+  version = "0.1.1"
 
   project_id             = var.project_id
   region                 = var.region
