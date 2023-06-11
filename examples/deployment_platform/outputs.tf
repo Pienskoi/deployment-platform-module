@@ -8,7 +8,7 @@ output "dns_name_servers" {
 }
 
 output "domain" {
-  value = module.deployment_platfom.domain
+  value = module.deployment_platform.domain
 }
 
 output "jenkins_webhook_static_ip" {
