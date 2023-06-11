@@ -14,3 +14,8 @@ variable "gke_cluster_name" {
   type    = string
   default = "project-cluster"
 }
+
+variable "vpc_name" {
+  type    = string
+  default = "project-vpc"
+}

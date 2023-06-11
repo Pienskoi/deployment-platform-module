@@ -31,7 +31,8 @@ variable "vpc_name" {
 }
 
 variable "subnet_name" {
-  type = string
+  type    = string
+  default = "project-subnet"
 }
 
 variable "domain" {
